@@ -9,7 +9,7 @@ namespace KiroSpotiBot.Core.Entities;
 /// </summary>
 public class GroupChatEntity : MyTableEntity
 {
-    // Strongly-typed wrapper for RowKey
+    // Strongly-typed wrapper for RowKey.
     [IgnoreDataMember]
     public long TelegramChatId
     {
@@ -17,7 +17,7 @@ public class GroupChatEntity : MyTableEntity
         set => RowKey = value.ToString();
     }
 
-    // Business properties
+    // Business properties.
     public string AdministratorTelegramUserId { get; set; } = string.Empty;
     public string? PlaylistId { get; set; }
     public string? PlaylistName { get; set; }

@@ -9,7 +9,7 @@ namespace KiroSpotiBot.Core.Entities;
 /// </summary>
 public class UserGroupConfigEntity : MyTableEntity
 {
-    // Strongly-typed wrappers
+    // Strongly-typed wrappers.
     [IgnoreDataMember]
     public long TelegramChatId
     {
@@ -24,7 +24,7 @@ public class UserGroupConfigEntity : MyTableEntity
         set => RowKey = value.ToString();
     }
 
-    // Business properties
+    // Business properties.
     public bool AutoQueueEnabled { get; set; } = false;
 
     public UserGroupConfigEntity()

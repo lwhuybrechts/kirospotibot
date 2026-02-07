@@ -9,7 +9,7 @@ namespace KiroSpotiBot.Core.Entities;
 /// </summary>
 public class TrackGenreEntity : MyTableEntity
 {
-    // Strongly-typed wrappers
+    // Strongly-typed wrappers.
     [IgnoreDataMember]
     public string TrackSpotifyId
     {

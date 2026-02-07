@@ -9,7 +9,7 @@ namespace KiroSpotiBot.Core.Entities;
 /// </summary>
 public class UserEntity : MyTableEntity
 {
-    // Strongly-typed wrapper for RowKey
+    // Strongly-typed wrapper for RowKey.
     [IgnoreDataMember]
     public long TelegramUserId
     {
@@ -17,7 +17,7 @@ public class UserEntity : MyTableEntity
         set => RowKey = value.ToString();
     }
 
-    // Business properties
+    // Business properties.
     public string? EncryptedAccessToken { get; set; }
     public string? EncryptedRefreshToken { get; set; }
     public int? TokenExpiresIn { get; set; }

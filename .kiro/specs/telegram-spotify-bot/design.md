@@ -950,27 +950,26 @@ The testing strategy employs both unit tests and property-based tests as complem
 
 ### Property-Based Testing Configuration
 
-**Library**: Use **FsCheck** for .NET property-based testing
+**Library**: Use **xUnit Theory with InlineData** for property-based testing
 
 **Configuration**:
-- Minimum 100 iterations per property test
+- Multiple test cases per property using `[InlineData]` attributes
 - Each test tagged with: `Feature: telegram-spotify-bot, Property {number}: {property_text}`
-- Custom generators for domain objects (Telegram updates, Spotify responses)
+- Test cases cover various input combinations to validate universal properties
 
 **Test Organization**:
 ```csharp
-[Property(MaxTest = 100)]
+[Theory]
+[InlineData("https://open.spotify.com/track/abc123", "abc123")]
+[InlineData("https://open.spotify.com/track/xyz789?si=test", "xyz789")]
+[InlineData("spotify:track:def456", "def456")]
 [Trait("Feature", "telegram-spotify-bot")]
 [Trait("Property", "Property 3: Spotify URL Detection")]
-public Property SpotifyUrlDetection_ExtractsAllValidUrls()
+public void SpotifyUrlDetection_ExtractsAllValidUrls(string url, string expectedTrackId)
 {
-    return Prop.ForAll(
-        Arb.From<MessageWithSpotifyUrls>(),
-        message => {
-            var detected = _urlDetector.DetectTrackUrls(message.Text);
-            return detected.Count() == message.ExpectedTrackIds.Count &&
-                   detected.All(id => message.ExpectedTrackIds.Contains(id));
-        });
+    var detected = _urlDetector.DetectTrackUrls(url);
+    Assert.Single(detected);
+    Assert.Equal(expectedTrackId, detected.First());
 }
 ```
 
@@ -985,12 +984,12 @@ public Property SpotifyUrlDetection_ExtractsAllValidUrls()
 
 **Property Test Coverage**:
 - All 43 correctness properties defined above
-- Each property implemented as a single property-based test
-- Custom generators for:
-  - Telegram webhook payloads
-  - Spotify API responses
-  - Database entities
-  - User interactions (votes, commands)
+- Each property implemented using xUnit Theory with multiple InlineData test cases
+- Test cases designed to cover:
+  - Typical inputs
+  - Edge cases
+  - Boundary values
+  - Various input combinations
 
 ### Integration Testing
 

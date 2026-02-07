@@ -46,7 +46,7 @@ public class UserRepository : BaseRepository<UserEntity>, IUserRepository
             user = new UserEntity(telegramUserId);
         }
 
-        // Encrypt Spotify credentials before storing
+        // Encrypt Spotify credentials before storing.
         user.EncryptedAccessToken = _encryptionService.Encrypt(spotifyAccessToken);
         user.EncryptedRefreshToken = _encryptionService.Encrypt(spotifyRefreshToken);
         user.TokenExpiresIn = expiresIn;

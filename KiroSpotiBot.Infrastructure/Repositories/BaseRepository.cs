@@ -21,7 +21,7 @@ public class BaseRepository<T> : IRepository<T> where T : MyTableEntity, new()
         _logger = logger;
         _tableClient = tableServiceClient.GetTableClient(tableName);
         
-        // Ensure table exists
+        // Ensure table exists.
         _tableClient.CreateIfNotExists();
     }
 
@@ -94,7 +94,7 @@ public class BaseRepository<T> : IRepository<T> where T : MyTableEntity, new()
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
-            // Entity doesn't exist, ignore
+            // Entity doesn't exist, ignore.
         }
         catch (Exception ex)
         {

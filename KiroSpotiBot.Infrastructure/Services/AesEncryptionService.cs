@@ -21,12 +21,12 @@ public class AesEncryptionService : IEncryptionService
             throw new InvalidOperationException("Encryption key not configured. Please set Encryption:Key in configuration.");
         }
         
-        // Derive key and IV from the encryption key
+        // Derive key and IV from the encryption key.
         using var sha256 = SHA256.Create();
         var keyBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(encryptionKey));
         _key = keyBytes;
         
-        // Use first 16 bytes of key hash as IV
+        // Use first 16 bytes of key hash as IV.
         _iv = keyBytes.Take(16).ToArray();
     }
 

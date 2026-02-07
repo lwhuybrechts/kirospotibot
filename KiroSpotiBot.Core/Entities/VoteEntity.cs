@@ -9,7 +9,7 @@ namespace KiroSpotiBot.Core.Entities;
 /// </summary>
 public class VoteEntity : MyTableEntity
 {
-    // Strongly-typed wrappers
+    // Strongly-typed wrappers.
     [IgnoreDataMember]
     public string TrackRecordId
     {
@@ -24,10 +24,10 @@ public class VoteEntity : MyTableEntity
         set => RowKey = value.ToString();
     }
 
-    // Business properties
-    public string VoteType { get; set; } = string.Empty; // "Upvote" or "Downvote"
-    public string VoterUsername { get; set; } = string.Empty; // Denormalized for display
-    public string? VoterAvatarUrl { get; set; } // Denormalized for display
+    // Business properties.
+    public string VoteType { get; set; } = string.Empty; // "Upvote" or "Downvote".
+    public string VoterUsername { get; set; } = string.Empty; // Denormalized for display.
+    public string? VoterAvatarUrl { get; set; } // Denormalized for display.
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

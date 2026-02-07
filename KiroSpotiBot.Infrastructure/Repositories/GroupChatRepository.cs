@@ -28,7 +28,7 @@ public class GroupChatRepository : BaseRepository<GroupChatEntity>, IGroupChatRe
             return false;
         }
 
-        // Query all group chats to check if playlist is already linked
+        // Query all group chats to check if playlist is already linked.
         var filter = $"PlaylistId eq '{playlistId}'";
         var results = await QueryAsync(filter, cancellationToken);
         return results.Any();

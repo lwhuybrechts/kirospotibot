@@ -24,7 +24,7 @@ public class TrackRecordRepository : BaseRepository<TrackRecordEntity>, ITrackRe
     {
         var allRecords = await GetByPartitionKeyAsync(telegramChatId.ToString(), cancellationToken);
         
-        // Apply pagination and ordering
+        // Apply pagination and ordering.
         return allRecords
             .OrderByDescending(r => r.SharedAt)
             .Skip(skip)

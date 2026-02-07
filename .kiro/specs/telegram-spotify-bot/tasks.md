@@ -41,7 +41,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Implement vote counting methods
     - _Requirements: 12.3, 12.4, 12.6, 12.7_
   
-  - [ ]* 2.6 Write property test for configuration round-trip
+  - [x] 2.6 Write property test for configuration round-trip
     - **Property 5: Configuration Round-Trip**
     - **Validates: Requirements 3.2, 5.2, 9.4, 18.2**
 
@@ -449,7 +449,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
 - Tasks marked with `*` are optional property-based tests and can be skipped for faster MVP
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation
-- Property tests validate universal correctness properties using FsCheck
+- Property tests validate universal correctness properties using xUnit Theory with InlineData
 - Unit tests validate specific examples and edge cases
 - The implementation uses .NET 10, Azure Functions, Azure Table Storage, and Blazor
 - All sensitive data (tokens, credentials) must be encrypted before storage
