@@ -25,13 +25,13 @@ public class TrackRecordEntity : MyTableEntity
     }
 
     // Business properties
-    public required string TrackSpotifyId { get; set; }
-    public required string TrackName { get; set; } // Denormalized for display
-    public required string ArtistName { get; set; } // Denormalized for display
-    public required string AlbumName { get; set; } // Denormalized for display
+    public string TrackSpotifyId { get; set; } = string.Empty;
+    public string TrackName { get; set; } = string.Empty; // Denormalized for display
+    public string ArtistName { get; set; } = string.Empty; // Denormalized for display
+    public string AlbumName { get; set; } = string.Empty; // Denormalized for display
     public string? AlbumImageUrl { get; set; } // Denormalized for display
     public long SharedByTelegramUserId { get; set; }
-    public required string SharedByUsername { get; set; } // Denormalized for display
+    public string SharedByUsername { get; set; } = string.Empty; // Denormalized for display
     public string? SharedByAvatarUrl { get; set; } // Denormalized for display
     public int TelegramMessageId { get; set; }
     public bool IsDeleted { get; set; }

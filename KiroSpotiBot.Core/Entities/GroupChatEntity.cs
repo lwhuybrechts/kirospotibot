@@ -18,7 +18,7 @@ public class GroupChatEntity : MyTableEntity
     }
 
     // Business properties
-    public required string AdministratorTelegramUserId { get; set; }
+    public string AdministratorTelegramUserId { get; set; } = string.Empty;
     public string? PlaylistId { get; set; }
     public string? PlaylistName { get; set; }
     public int DownvoteThreshold { get; set; } = 3;

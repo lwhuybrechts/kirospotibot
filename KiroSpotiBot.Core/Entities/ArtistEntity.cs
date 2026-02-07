@@ -18,7 +18,7 @@ public class ArtistEntity : MyTableEntity
     }
 
     // Business properties
-    public required string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     public ArtistEntity()
     {
