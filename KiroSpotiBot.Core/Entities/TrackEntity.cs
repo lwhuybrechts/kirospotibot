@@ -18,13 +18,13 @@ public class TrackEntity : MyTableEntity
     }
 
     // Business properties
-    public string Name { get; set; } = string.Empty;
+    public required string Name { get; set; }
     public int DurationSeconds { get; set; }
     public string? PreviewUrl { get; set; }
-    public string ArtistSpotifyId { get; set; } = string.Empty;
-    public string ArtistName { get; set; } = string.Empty; // Denormalized for display
-    public string AlbumSpotifyId { get; set; } = string.Empty;
-    public string AlbumName { get; set; } = string.Empty; // Denormalized for display
+    public required string ArtistSpotifyId { get; set; }
+    public required string ArtistName { get; set; } // Denormalized for display
+    public required string AlbumSpotifyId { get; set; }
+    public required string AlbumName { get; set; } // Denormalized for display
     public string? AlbumImageUrl { get; set; } // Denormalized for display
     public DateTime CreatedAt { get; set; }
 

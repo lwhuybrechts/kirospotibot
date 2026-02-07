@@ -25,8 +25,8 @@ public class VoteEntity : MyTableEntity
     }
 
     // Business properties
-    public string VoteType { get; set; } = string.Empty; // "Upvote" or "Downvote"
-    public string VoterUsername { get; set; } = string.Empty; // Denormalized for display
+    public required string VoteType { get; set; } // "Upvote" or "Downvote"
+    public required string VoterUsername { get; set; } // Denormalized for display
     public string? VoterAvatarUrl { get; set; } // Denormalized for display
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
