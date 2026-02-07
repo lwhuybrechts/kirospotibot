@@ -14,29 +14,29 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
   - Configure dependency injection for all services
   - _Requirements: 9.4, 9.5, 10.1_
 
-- [ ] 2. Implement Azure Table Storage repositories
-  - [ ] 2.1 Create repository interfaces and base repository class
+- [x] 2. Implement Azure Table Storage repositories
+  - [x] 2.1 Create repository interfaces and base repository class
     - Define IRepository<T> interface with common CRUD operations
     - Implement BaseRepository<T> with Table Storage client
     - Add error handling and retry logic for transient failures
     - _Requirements: 9.4_
   
-  - [ ] 2.2 Implement GroupChat repository
+  - [x] 2.2 Implement GroupChat repository
     - Create GroupChatRepository with methods for CRUD operations
     - Implement IsPlaylistLinkedAsync to enforce unique playlist constraint
     - _Requirements: 3.1, 3.2, 5.2, 5.4_
   
-  - [ ] 2.3 Implement User repository
+  - [x] 2.3 Implement User repository
     - Create UserRepository with methods for CRUD operations
     - Implement credential encryption/decryption
     - _Requirements: 4.4, 9.5_
   
-  - [ ] 2.4 Implement TrackRecord repository
+  - [x] 2.4 Implement TrackRecord repository
     - Create TrackRecordRepository with pagination support
     - Implement methods to query by group chat and check deleted tracks
     - _Requirements: 11.1, 11.2, 13.5_
   
-  - [ ] 2.5 Implement Vote repository
+  - [x] 2.5 Implement Vote repository
     - Create VoteRepository with upsert and delete operations
     - Implement vote counting methods
     - _Requirements: 12.3, 12.4, 12.6, 12.7_

@@ -1,8 +1,6 @@
-using Azure.Data.Tables;
-using KiroSpotiBot.Infrastructure.Repositories;
+using KiroSpotiBot.Infrastructure;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -26,16 +24,8 @@ builder.Services.AddLogging(logging =>
     }
 });
 
-// Configure Azure Table Storage
-var storageConnectionString = builder.Configuration["AZURE_STORAGE_CONNECTION_STRING"];
-if (!string.IsNullOrEmpty(storageConnectionString))
-{
-    var tableServiceClient = new TableServiceClient(storageConnectionString);
-    builder.Services.AddSingleton(tableServiceClient);
-    
-    // Register repositories
-    builder.Services.AddSingleton(typeof(IRepository<>), typeof(BaseRepository<>));
-}
+// Register infrastructure services (repositories, encryption, Azure Table Storage)
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
