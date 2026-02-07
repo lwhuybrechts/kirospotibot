@@ -6,4 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Azure.Data.Tables" Version="12.9.1" />
+    <PackageReference Include="Sentry" Version="5.0.0" />
+    <PackageReference Include="Telegram.Bot" Version="22.0.0" />
+    <PackageReference Include="SpotifyAPI.Web" Version="7.2.1" />
+  </ItemGroup>
+
 </Project>
