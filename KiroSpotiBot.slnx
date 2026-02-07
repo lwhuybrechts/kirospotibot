@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="KiroSpotiBot.Core/KiroSpotiBot.Core.csproj" />
+  <Project Path="KiroSpotiBot.Functions/KiroSpotiBot.Functions.csproj" />
+  <Project Path="KiroSpotiBot.Infrastructure/KiroSpotiBot.Infrastructure.csproj" />
+  <Project Path="KiroSpotiBot.Tests/KiroSpotiBot.Tests.csproj" />
+  <Project Path="KiroSpotiBot.Web/KiroSpotiBot.Web.csproj" />
+</Solution>
