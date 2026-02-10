@@ -8,7 +8,7 @@ A .NET 10 Telegram bot that automatically detects Spotify track URLs in group ch
 - **KiroSpotiBot.Functions** - Azure Functions for Telegram webhooks and OAuth handlers
 - **KiroSpotiBot.Infrastructure** - Data access layer with Azure Table Storage repositories
 - **KiroSpotiBot.Web** - Blazor web frontend for browsing playlists and analytics
-- **KiroSpotiBot.Tests** - Unit and property-based tests using xUnit and FsCheck
+- **KiroSpotiBot.Tests** - Unit and property-based tests using xUnit
 
 ## Technologies
 
@@ -19,7 +19,6 @@ A .NET 10 Telegram bot that automatically detects Spotify track URLs in group ch
 - SpotifyAPI.Web SDK
 - Blazor Server/WebAssembly
 - Sentry (error logging and monitoring)
-- FsCheck (property-based testing)
 
 ## Getting Started
 

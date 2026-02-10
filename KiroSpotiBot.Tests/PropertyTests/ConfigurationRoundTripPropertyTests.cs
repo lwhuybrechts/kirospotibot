@@ -133,11 +133,11 @@ public class ConfigurationRoundTripPropertyTests
         
         new GroupChatEntity(telegramChatId, administratorId)
         {
+            CreatedAt = retrieved.CreatedAt,
             PlaylistId = updatedPlaylistId,
             PlaylistName = updatedPlaylistName,
             DownvoteThreshold = updatedThreshold
         }.ToExpectedObject(config => config
-            .Ignore(x => x.CreatedAt)
             .Ignore(x => x.Timestamp)
             .Ignore(x => x.ETag)
         ).ShouldEqual(final);
@@ -216,11 +216,11 @@ public class ConfigurationRoundTripPropertyTests
         
         new GroupChatEntity(telegramChatId, administratorId)
         {
+            CreatedAt = afterCreate.CreatedAt,
             PlaylistId = playlistId,
             PlaylistName = playlistName + " Updated",
             DownvoteThreshold = downvoteThreshold + 1
         }.ToExpectedObject(config => config
-            .Ignore(x => x.CreatedAt)
             .Ignore(x => x.Timestamp)
             .Ignore(x => x.ETag)
         ).ShouldEqual(final);
