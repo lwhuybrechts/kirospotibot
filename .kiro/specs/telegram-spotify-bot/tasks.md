@@ -63,8 +63,8 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 4: No False Positives in URL Detection**
     - **Validates: Requirements 2.5**
 
-- [ ] 5. Implement Spotify API integration
-  - [ ] 5.1 Create SpotifyService with authentication
+- [-] 5. Implement Spotify API integration
+  - [x] 5.1 Create SpotifyService with authentication
     - Integrate SpotifyAPI.Web NuGet package
     - Implement GetTrackAsync to retrieve track metadata
     - Implement RefreshAccessTokenAsync for token refresh

@@ -113,6 +113,49 @@ Test suite using xUnit and property-based testing.
 - Sensitive settings go in `local.settings.json` (gitignored)
 - Never hardcode secrets or connection strings
 - Use environment variables for production configuration
+- **ALWAYS use the Options Pattern for configuration** - NEVER inject `IConfiguration` directly into services
+- Create strongly-typed options classes in `KiroSpotiBot.Infrastructure/Options/`
+- Options class naming: `{Feature}Options.cs` (e.g., `SpotifyOptions`, `EncryptionOptions`)
+- Include a `const string SectionName` property for the configuration section name
+- **Add DataAnnotations validation attributes** to options properties (e.g., `[Required]`, `[Range]`, `[EmailAddress]`)
+- Register options in `DependencyInjection.cs` using `services.Configure<TOptions>(configuration.GetSection(SectionName))`
+- **Use `.AddOptionsWithValidateOnStart<TOptions>()` to validate configuration at startup** instead of at first use
+- Inject options into services using `IOptions<TOptions>`
+
+**Example options class with validation:**
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+public class SpotifyOptions
+{
+    public const string SectionName = "Spotify";
+    
+    [Required(ErrorMessage = "Spotify:ClientId is required.")]
+    public string ClientId { get; set; } = string.Empty;
+    
+    [Required(ErrorMessage = "Spotify:ClientSecret is required.")]
+    public string ClientSecret { get; set; } = string.Empty;
+}
+```
+
+**Example registration with validation:**
+```csharp
+services.Configure<SpotifyOptions>(configuration.GetSection(SpotifyOptions.SectionName))
+    .AddOptionsWithValidateOnStart<SpotifyOptions>();
+```
+
+**Example service using options:**
+```csharp
+public class SpotifyService
+{
+    private readonly SpotifyOptions _options;
+    
+    public SpotifyService(IOptions<SpotifyOptions> options)
+    {
+        _options = options.Value;
+    }
+}
+```
 
 ### Error Handling
 - Sentry integration for production error tracking
