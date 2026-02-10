@@ -90,6 +90,12 @@ Test suite using xUnit and property-based testing.
 
 ## Code Conventions (MUST follow)
 
+### Comments
+- All comments MUST end with a period at the end of sentences
+- This applies to single-line comments (`//`), multi-line comments (`/* */`), and XML documentation comments (`///`)
+- Example: `// This is a correct comment.`
+- Example: `/// <summary>This is correct.</summary>`
+
 ### Namespaces
 - Namespace MUST match folder structure exactly
 - Example: File at `KiroSpotiBot.Core/Entities/TrackEntity.cs` → namespace `KiroSpotiBot.Core.Entities`

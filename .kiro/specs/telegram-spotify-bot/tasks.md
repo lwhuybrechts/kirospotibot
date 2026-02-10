@@ -48,8 +48,8 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
 - [x] 3. Checkpoint - Verify repository layer
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Implement Spotify URL detection
-  - [ ] 4.1 Create SpotifyUrlDetector service
+- [x] 4. Implement Spotify URL detection
+  - [x] 4.1 Create SpotifyUrlDetector service
     - Implement regex pattern: `(https?://(open|play)\.spotify\.com/track/|spotify:track:)([\w\d]+)`
     - Create DetectTrackUrls method to find all URLs in text
     - Create ExtractTrackId method to extract track ID from URL
