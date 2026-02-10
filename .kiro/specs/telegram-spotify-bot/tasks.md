@@ -85,14 +85,14 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 7: Credential Persistence and Refresh**
     - **Validates: Requirements 4.5**
 
-- [ ] 6. Implement OAuth authentication flow (Azure Function)
-  - [ ] 6.1 Create SpotifyOAuthFunction
+- [x] 6. Implement OAuth authentication flow (Azure Function)
+  - [x] 6.1 Create SpotifyOAuthFunction
     - Implement StartAuth endpoint to initiate OAuth flow
     - Generate and store OAuth state parameter
     - Redirect to Spotify authorization URL with correct scopes
     - _Requirements: 4.1, 4.3_
   
-  - [ ] 6.2 Implement OAuth callback handler
+  - [x] 6.2 Implement OAuth callback handler
     - Implement HandleCallback endpoint
     - Validate state parameter
     - Exchange authorization code for tokens

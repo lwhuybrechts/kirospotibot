@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\KiroSpotiBot.Core\KiroSpotiBot.Core.csproj" />
     <ProjectReference Include="..\KiroSpotiBot.Infrastructure\KiroSpotiBot.Infrastructure.csproj" />
+    <ProjectReference Include="..\KiroSpotiBot.Functions\KiroSpotiBot.Functions.csproj" />
   </ItemGroup>
 
 </Project>
