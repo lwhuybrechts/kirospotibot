@@ -63,6 +63,54 @@ Serverless webhook handlers and HTTP endpoints.
 - HTTP-triggered Azure Functions
 - Stateless request processing
 - Configuration via `local.settings.json` (never commit this file)
+- **Azure Functions as Controllers**: Function classes should act as thin controllers that handle HTTP concerns only (request/response, validation, status codes). Business logic MUST be delegated to handler/service classes.
+
+**Azure Function Responsibilities (MUST follow):**
+- Parse and validate HTTP requests
+- Deserialize request payloads
+- Delegate to handler/service classes for business logic
+- Handle HTTP-specific concerns (status codes, headers, responses)
+- Log HTTP-level errors
+- Return appropriate HTTP responses
+
+**Handler/Service Responsibilities:**
+- All business logic and domain operations
+- Interaction with repositories and external APIs
+- Complex validation and processing
+- Error handling for business logic
+
+**Example structure:**
+```csharp
+// ❌ BAD: Business logic in Function class
+public class MyFunction
+{
+    [Function("MyEndpoint")]
+    public async Task<IActionResult> Run(HttpRequest req)
+    {
+        var data = await req.ReadFromJsonAsync<MyData>();
+        // ❌ Don't do complex processing here
+        var result = await _repository.GetAsync(data.Id);
+        var processed = ProcessComplexLogic(result);
+        return new OkObjectResult(processed);
+    }
+}
+
+// ✅ GOOD: Delegate to handler
+public class MyFunction
+{
+    private readonly IMyHandler _handler;
+    
+    [Function("MyEndpoint")]
+    public async Task<IActionResult> Run(HttpRequest req)
+    {
+        var data = await req.ReadFromJsonAsync<MyData>();
+        if (data == null) return new BadRequestResult();
+        
+        var result = await _handler.HandleAsync(data);
+        return new OkObjectResult(result);
+    }
+}
+```
 
 **Dependencies:** Core, Infrastructure
 
@@ -171,6 +219,10 @@ public class SpotifyService
 **New repository implementation:** → `KiroSpotiBot.Infrastructure/Repositories/{Name}Repository.cs`
 
 **New Azure Function:** → `KiroSpotiBot.Functions/{FunctionName}.cs`
+
+**New handler/service class:** → `KiroSpotiBot.Infrastructure/Handlers/{Name}Handler.cs` or `KiroSpotiBot.Infrastructure/Services/{Name}Service.cs`
+
+**New handler interface:** → `KiroSpotiBot.Core/Interfaces/I{Name}Handler.cs`
 
 **New Blazor page:** → `KiroSpotiBot.Web/Pages/{PageName}.razor`
 

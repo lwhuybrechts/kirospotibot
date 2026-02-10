@@ -1,6 +1,7 @@
 using KiroSpotiBot.Core.Entities;
 using KiroSpotiBot.Core.Interfaces;
 using KiroSpotiBot.Functions;
+using KiroSpotiBot.Infrastructure.Handlers;
 using KiroSpotiBot.Infrastructure.Options;
 using KiroSpotiBot.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -32,6 +33,7 @@ public class OAuthPrivateChatEnforcementPropertyTests : IDisposable
     public OAuthPrivateChatEnforcementPropertyTests()
     {
         var mockLogger = new Mock<ILogger<SpotifyOAuthFunction>>();
+        var mockHandlerLogger = new Mock<ILogger<SpotifyOAuthHandler>>();
         _mockOAuthStateRepo = new Mock<IOAuthStateRepository>();
         _mockUserRepo = new Mock<IUserRepository>();
         _mockTelegramClient = new Mock<ITelegramBotClient>();
@@ -43,12 +45,17 @@ public class OAuthPrivateChatEnforcementPropertyTests : IDisposable
             RedirectUri = "https://test.com/callback"
         });
 
-        _function = new SpotifyOAuthFunction(
-            mockLogger.Object,
+        var handler = new SpotifyOAuthHandler(
+            mockHandlerLogger.Object,
             _mockOAuthStateRepo.Object,
             _mockUserRepo.Object,
             _mockTelegramClient.Object,
             spotifyOptions
+        );
+
+        _function = new SpotifyOAuthFunction(
+            mockLogger.Object,
+            handler
         );
     }
 

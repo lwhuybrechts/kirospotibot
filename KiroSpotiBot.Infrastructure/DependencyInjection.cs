@@ -46,6 +46,9 @@ public static class DependencyInjection
         // Register Spotify service.
         services.AddScoped<ISpotifyService, SpotifyService>();
         
+        // Register handlers.
+        services.AddScoped<ISpotifyOAuthHandler, Handlers.SpotifyOAuthHandler>();
+        
         // Register repositories.
         services.AddScoped<IGroupChatRepository, GroupChatRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
