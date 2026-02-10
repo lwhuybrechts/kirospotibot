@@ -48,6 +48,7 @@ public static class DependencyInjection
         
         // Register handlers.
         services.AddScoped<ISpotifyOAuthHandler, Handlers.SpotifyOAuthHandler>();
+        services.AddScoped<ITelegramUpdateHandler, Handlers.TelegramUpdateHandler>();
         
         // Register repositories.
         services.AddScoped<IGroupChatRepository, GroupChatRepository>();

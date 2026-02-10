@@ -17,4 +17,9 @@ public class TelegramOptions
     /// </summary>
     [Required(ErrorMessage = "Telegram:BotToken is required.")]
     public string BotToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The webhook secret token for validating incoming webhook requests.
+    /// </summary>
+    public string? WebhookSecretToken { get; set; }
 }

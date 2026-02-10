@@ -111,8 +111,8 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
 - [x] 7. Checkpoint - Verify authentication and Spotify integration
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Implement Telegram webhook handler (Azure Function)
-  - [ ] 8.1 Create TelegramWebhookFunction
+- [x] 8. Implement Telegram webhook handler (Azure Function)
+  - [x] 8.1 Create TelegramWebhookFunction
     - Implement HTTP trigger for webhook endpoint
     - Validate webhook signature from Telegram
     - Parse Telegram Update object
