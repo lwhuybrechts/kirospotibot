@@ -70,18 +70,18 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Implement RefreshAccessTokenAsync for token refresh
     - _Requirements: 4.5, 11.4_
   
-  - [ ] 5.2 Implement playlist operations
+  - [x] 5.2 Implement playlist operations
     - Implement AddTrackToPlaylistAsync
     - Implement RemoveTrackFromPlaylistAsync
     - Implement playlist validation
     - _Requirements: 5.1, 6.1, 13.1_
   
-  - [ ] 5.3 Implement queue operations
+  - [x] 5.3 Implement queue operations
     - Implement AddTrackToQueueAsync
     - Implement IsUserPlayingAsync to check playback state
     - _Requirements: 19.3, 19.4, 20.2_
   
-  - [ ]* 5.4 Write property test for credential refresh
+  - [x] 5.4 Write property test for credential refresh
     - **Property 7: Credential Persistence and Refresh**
     - **Validates: Requirements 4.5**
 
