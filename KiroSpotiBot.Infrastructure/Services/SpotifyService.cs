@@ -27,6 +27,8 @@ public class SpotifyService : ISpotifyService
     {
         try
         {
+            _logger.LogInformation("Retrieving track metadata for {TrackId}.", trackId);
+
             // Use client credentials flow for public track metadata retrieval.
             var config = SpotifyClientConfig.CreateDefault();
             var request = new ClientCredentialsRequest(_options.ClientId, _options.ClientSecret);
@@ -45,6 +47,12 @@ public class SpotifyService : ISpotifyService
             var artist = await spotify.Artists.Get(track.Artists[0].Id, cancellationToken);
             var genres = artist?.Genres ?? new List<string>();
 
+            _logger.LogInformation(
+                "Successfully retrieved track metadata. TrackId: {TrackId}, Name: {TrackName}, Artist: {ArtistName}",
+                trackId,
+                track.Name,
+                track.Artists[0].Name);
+
             return new SpotifyTrackMetadata(
                 SpotifyId: track.Id,
                 Name: track.Name,
@@ -60,7 +68,12 @@ public class SpotifyService : ISpotifyService
         }
         catch (APIException ex)
         {
-            _logger.LogError(ex, "Spotify API error while retrieving track {TrackId}: {Message}", trackId, ex.Message);
+            _logger.LogError(
+                ex,
+                "Spotify API error while retrieving track {TrackId}. StatusCode: {StatusCode}, Message: {Message}",
+                trackId,
+                ex.Response?.StatusCode,
+                ex.Message);
             return null;
         }
         catch (Exception ex)
@@ -75,6 +88,8 @@ public class SpotifyService : ISpotifyService
     {
         try
         {
+            _logger.LogInformation("Adding track {TrackId} to playlist {PlaylistId}.", trackId, playlistId);
+
             var spotify = new SpotifyClient(accessToken);
             var trackUri = $"spotify:track:{trackId}";
             
@@ -86,12 +101,22 @@ public class SpotifyService : ISpotifyService
         }
         catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            _logger.LogWarning("Unauthorized access when adding track {TrackId} to playlist {PlaylistId}. Token may be expired.", trackId, playlistId);
+            _logger.LogWarning(
+                "Unauthorized access when adding track {TrackId} to playlist {PlaylistId}. Token may be expired. StatusCode: {StatusCode}",
+                trackId,
+                playlistId,
+                ex.Response?.StatusCode);
             return false;
         }
         catch (APIException ex)
         {
-            _logger.LogError(ex, "Spotify API error while adding track {TrackId} to playlist {PlaylistId}: {Message}", trackId, playlistId, ex.Message);
+            _logger.LogError(
+                ex,
+                "Spotify API error while adding track {TrackId} to playlist {PlaylistId}. StatusCode: {StatusCode}, Message: {Message}",
+                trackId,
+                playlistId,
+                ex.Response?.StatusCode,
+                ex.Message);
             return false;
         }
         catch (Exception ex)
@@ -106,6 +131,8 @@ public class SpotifyService : ISpotifyService
     {
         try
         {
+            _logger.LogInformation("Removing track {TrackId} from playlist {PlaylistId}.", trackId, playlistId);
+
             var spotify = new SpotifyClient(accessToken);
             var trackUri = $"spotify:track:{trackId}";
             
@@ -124,12 +151,22 @@ public class SpotifyService : ISpotifyService
         }
         catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            _logger.LogWarning("Unauthorized access when removing track {TrackId} from playlist {PlaylistId}. Token may be expired.", trackId, playlistId);
+            _logger.LogWarning(
+                "Unauthorized access when removing track {TrackId} from playlist {PlaylistId}. Token may be expired. StatusCode: {StatusCode}",
+                trackId,
+                playlistId,
+                ex.Response?.StatusCode);
             return false;
         }
         catch (APIException ex)
         {
-            _logger.LogError(ex, "Spotify API error while removing track {TrackId} from playlist {PlaylistId}: {Message}", trackId, playlistId, ex.Message);
+            _logger.LogError(
+                ex,
+                "Spotify API error while removing track {TrackId} from playlist {PlaylistId}. StatusCode: {StatusCode}, Message: {Message}",
+                trackId,
+                playlistId,
+                ex.Response?.StatusCode,
+                ex.Message);
             return false;
         }
         catch (Exception ex)
@@ -144,6 +181,8 @@ public class SpotifyService : ISpotifyService
     {
         try
         {
+            _logger.LogInformation("Adding track {TrackId} to user's queue.", trackId);
+
             var spotify = new SpotifyClient(accessToken);
             var trackUri = $"spotify:track:{trackId}";
             
@@ -154,7 +193,10 @@ public class SpotifyService : ISpotifyService
         }
         catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            _logger.LogWarning("Unauthorized access when adding track {TrackId} to queue. Token may be expired.", trackId);
+            _logger.LogWarning(
+                "Unauthorized access when adding track {TrackId} to queue. Token may be expired. StatusCode: {StatusCode}",
+                trackId,
+                ex.Response?.StatusCode);
             return false;
         }
         catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -164,7 +206,12 @@ public class SpotifyService : ISpotifyService
         }
         catch (APIException ex)
         {
-            _logger.LogError(ex, "Spotify API error while adding track {TrackId} to queue: {Message}", trackId, ex.Message);
+            _logger.LogError(
+                ex,
+                "Spotify API error while adding track {TrackId} to queue. StatusCode: {StatusCode}, Message: {Message}",
+                trackId,
+                ex.Response?.StatusCode,
+                ex.Message);
             return false;
         }
         catch (Exception ex)
@@ -182,16 +229,25 @@ public class SpotifyService : ISpotifyService
             var spotify = new SpotifyClient(accessToken);
             var playback = await spotify.Player.GetCurrentPlayback(cancellationToken);
 
-            return playback?.IsPlaying ?? false;
+            var isPlaying = playback?.IsPlaying ?? false;
+            _logger.LogInformation("Checked user playback state. IsPlaying: {IsPlaying}", isPlaying);
+            
+            return isPlaying;
         }
         catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            _logger.LogWarning("Unauthorized access when checking playback state. Token may be expired.");
+            _logger.LogWarning(
+                "Unauthorized access when checking playback state. Token may be expired. StatusCode: {StatusCode}",
+                ex.Response?.StatusCode);
             return false;
         }
         catch (APIException ex)
         {
-            _logger.LogError(ex, "Spotify API error while checking playback state: {Message}", ex.Message);
+            _logger.LogError(
+                ex,
+                "Spotify API error while checking playback state. StatusCode: {StatusCode}, Message: {Message}",
+                ex.Response?.StatusCode,
+                ex.Message);
             return false;
         }
         catch (Exception ex)
@@ -206,6 +262,8 @@ public class SpotifyService : ISpotifyService
     {
         try
         {
+            _logger.LogInformation("Refreshing Spotify access token.");
+
             var config = SpotifyClientConfig.CreateDefault();
             var request = new AuthorizationCodeRefreshRequest(_options.ClientId, _options.ClientSecret, refreshToken);
             var response = await new OAuthClient(config).RequestToken(request, cancellationToken);
@@ -215,7 +273,11 @@ public class SpotifyService : ISpotifyService
         }
         catch (APIException ex)
         {
-            _logger.LogError(ex, "Spotify API error while refreshing access token: {Message}", ex.Message);
+            _logger.LogError(
+                ex,
+                "Spotify API error while refreshing access token. StatusCode: {StatusCode}, Message: {Message}",
+                ex.Response?.StatusCode,
+                ex.Message);
             return null;
         }
         catch (Exception ex)
@@ -230,10 +292,15 @@ public class SpotifyService : ISpotifyService
     {
         try
         {
+            _logger.LogInformation("Validating playlist {PlaylistId}.", playlistId);
+
             var spotify = new SpotifyClient(accessToken);
             var playlist = await spotify.Playlists.Get(playlistId, cancellationToken);
 
-            return playlist != null;
+            var isValid = playlist != null;
+            _logger.LogInformation("Playlist {PlaylistId} validation result: {IsValid}", playlistId, isValid);
+            
+            return isValid;
         }
         catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
@@ -242,12 +309,20 @@ public class SpotifyService : ISpotifyService
         }
         catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            _logger.LogWarning("Unauthorized access to playlist {PlaylistId}. Token may be expired.", playlistId);
+            _logger.LogWarning(
+                "Unauthorized access to playlist {PlaylistId}. Token may be expired. StatusCode: {StatusCode}",
+                playlistId,
+                ex.Response?.StatusCode);
             return false;
         }
         catch (APIException ex)
         {
-            _logger.LogError(ex, "Spotify API error while validating playlist {PlaylistId}: {Message}", playlistId, ex.Message);
+            _logger.LogError(
+                ex,
+                "Spotify API error while validating playlist {PlaylistId}. StatusCode: {StatusCode}, Message: {Message}",
+                playlistId,
+                ex.Response?.StatusCode,
+                ex.Message);
             return false;
         }
         catch (Exception ex)
@@ -262,8 +337,18 @@ public class SpotifyService : ISpotifyService
     {
         try
         {
+            _logger.LogInformation("Getting playlist name for {PlaylistId}.", playlistId);
+
             var spotify = new SpotifyClient(accessToken);
             var playlist = await spotify.Playlists.Get(playlistId, cancellationToken);
+
+            if (playlist != null)
+            {
+                _logger.LogInformation(
+                    "Successfully retrieved playlist name. PlaylistId: {PlaylistId}, Name: {PlaylistName}",
+                    playlistId,
+                    playlist.Name);
+            }
 
             return playlist?.Name;
         }
@@ -274,12 +359,20 @@ public class SpotifyService : ISpotifyService
         }
         catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            _logger.LogWarning("Unauthorized access to playlist {PlaylistId}. Token may be expired.", playlistId);
+            _logger.LogWarning(
+                "Unauthorized access to playlist {PlaylistId}. Token may be expired. StatusCode: {StatusCode}",
+                playlistId,
+                ex.Response?.StatusCode);
             return null;
         }
         catch (APIException ex)
         {
-            _logger.LogError(ex, "Spotify API error while getting playlist {PlaylistId} name: {Message}", playlistId, ex.Message);
+            _logger.LogError(
+                ex,
+                "Spotify API error while getting playlist {PlaylistId} name. StatusCode: {StatusCode}, Message: {Message}",
+                playlistId,
+                ex.Response?.StatusCode,
+                ex.Message);
             return null;
         }
         catch (Exception ex)
