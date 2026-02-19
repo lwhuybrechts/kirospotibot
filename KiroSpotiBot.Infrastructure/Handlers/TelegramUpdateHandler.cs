@@ -108,11 +108,8 @@ public class TelegramUpdateHandler : ITelegramUpdateHandler
             _logger.LogInformation("Processing callback query {CallbackQueryId} from user {UserId}.",
                 callbackQuery.Id, callbackQuery.From.Id);
 
-            // TODO: Implement callback query handling logic in Task 15.
-            // For now, just acknowledge the callback.
-            await _telegramBotClient.AnswerCallbackQuery(
-                callbackQuery.Id,
-                cancellationToken: cancellationToken);
+            // Delegate to MessageHandler for business logic.
+            await _messageHandler.HandleCallbackQueryAsync(callbackQuery, cancellationToken);
         }
         catch (Exception ex)
         {

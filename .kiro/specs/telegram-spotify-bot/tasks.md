@@ -264,12 +264,12 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 41: Auto-Queue Conditional Execution**
     - **Validates: Requirements 19.3, 19.4**
 
-- [ ] 15. Implement manual queue addition
-  - [ ] 15.1 Add "Add to Queue" button to confirmation messages
+- [x] 15. Implement manual queue addition
+  - [x] 15.1 Add "Add to Queue" button to confirmation messages
     - Include button in track confirmation reply
     - _Requirements: 20.1_
   
-  - [ ] 15.2 Implement callback handler for queue button
+  - [x] 15.2 Implement callback handler for queue button
     - Implement HandleCallbackQueryAsync
     - Check user authentication
     - Check if user is playing music
@@ -277,7 +277,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Send confirmation or error message
     - _Requirements: 20.2, 20.3, 20.4, 20.5_
   
-  - [ ] 15.3 Write property test for manual queue addition
+  - [x] 15.3 Write property test for manual queue addition
     - **Property 43: Manual Queue Addition**
     - **Validates: Requirements 20.2, 20.6**
 

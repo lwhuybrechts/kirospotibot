@@ -22,6 +22,7 @@ public class MessageHandler : IMessageHandler
     private readonly IVoteManager _voteManager;
     private readonly ITrackRecordRepository _trackRecordRepository;
     private readonly ICommandHandler _commandHandler;
+    private readonly ISpotifyService _spotifyService;
 
     public MessageHandler(
         ILogger<MessageHandler> logger,
@@ -34,7 +35,8 @@ public class MessageHandler : IMessageHandler
         IGroupSetupHandler groupSetupHandler,
         IVoteManager voteManager,
         ITrackRecordRepository trackRecordRepository,
-        ICommandHandler commandHandler)
+        ICommandHandler commandHandler,
+        ISpotifyService spotifyService)
     {
         _logger = logger;
         _telegramBotClient = telegramBotClient;
@@ -47,6 +49,7 @@ public class MessageHandler : IMessageHandler
         _voteManager = voteManager;
         _trackRecordRepository = trackRecordRepository;
         _commandHandler = commandHandler;
+        _spotifyService = spotifyService;
     }
 
     /// <summary>
@@ -323,6 +326,116 @@ public class MessageHandler : IMessageHandler
         {
             _logger.LogError(ex, "Error handling message reaction for message {MessageId} in chat {ChatId}.", 
                 reaction.MessageId, reaction.Chat.Id);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Handles callback queries from inline keyboard buttons.
+    /// </summary>
+    public async Task HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Ensure we have callback data.
+            if (string.IsNullOrWhiteSpace(callbackQuery.Data))
+            {
+                _logger.LogWarning("Received callback query without data.");
+                return;
+            }
+
+            // Parse callback data (format: "queue:{trackId}").
+            var parts = callbackQuery.Data.Split(':');
+            if (parts.Length != 2 || parts[0] != "queue")
+            {
+                _logger.LogWarning("Invalid callback data format: {Data}", callbackQuery.Data);
+                return;
+            }
+
+            var trackId = parts[1];
+            var userId = callbackQuery.From.Id;
+
+            _logger.LogInformation("User {UserId} clicked 'Add to Queue' for track {TrackId}.", userId, trackId);
+
+            // Check if user is authenticated with Spotify.
+            var user = await _userRepository.GetByTelegramUserIdAsync(userId, cancellationToken);
+            if (user == null)
+            {
+                _logger.LogInformation("Creating new user record for Telegram user {UserId}.", userId);
+                user = await _userRepository.CreateUserAsync(userId, cancellationToken);
+            }
+
+            var accessToken = await _userRepository.GetDecryptedSpotifyAccessTokenAsync(userId, cancellationToken);
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                _logger.LogInformation("User {UserId} is not authenticated with Spotify.", userId);
+
+                // Answer callback query with error.
+                await _telegramBotClient.AnswerCallbackQuery(
+                    callbackQueryId: callbackQuery.Id,
+                    text: "⚠️ You need to authenticate with Spotify first. Use /auth command in a private chat with me.",
+                    showAlert: true,
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
+            // Check if user is currently playing music.
+            var isPlaying = await _spotifyService.IsUserPlayingAsync(accessToken, cancellationToken);
+            if (!isPlaying)
+            {
+                _logger.LogInformation("User {UserId} is not currently playing music.", userId);
+
+                // Answer callback query with error.
+                await _telegramBotClient.AnswerCallbackQuery(
+                    callbackQueryId: callbackQuery.Id,
+                    text: "⚠️ You need to be playing music on Spotify to add tracks to your queue.",
+                    showAlert: true,
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
+            // Add track to user's Spotify queue.
+            var success = await _spotifyService.AddTrackToQueueAsync(trackId, accessToken, cancellationToken);
+            if (!success)
+            {
+                _logger.LogWarning("Failed to add track {TrackId} to queue for user {UserId}.", trackId, userId);
+
+                // Answer callback query with error.
+                await _telegramBotClient.AnswerCallbackQuery(
+                    callbackQueryId: callbackQuery.Id,
+                    text: "❌ Failed to add track to your queue. Please try again.",
+                    showAlert: true,
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
+            _logger.LogInformation("Successfully added track {TrackId} to queue for user {UserId}.", trackId, userId);
+
+            // Answer callback query with success.
+            await _telegramBotClient.AnswerCallbackQuery(
+                callbackQueryId: callbackQuery.Id,
+                text: "✅ Track added to your Spotify queue!",
+                showAlert: false,
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling callback query {QueryId}.", callbackQuery.Id);
+            
+            // Try to answer the callback query with an error message.
+            try
+            {
+                await _telegramBotClient.AnswerCallbackQuery(
+                    callbackQueryId: callbackQuery.Id,
+                    text: "❌ An error occurred. Please try again later.",
+                    showAlert: true,
+                    cancellationToken: cancellationToken);
+            }
+            catch (Exception answerEx)
+            {
+                _logger.LogError(answerEx, "Failed to answer callback query {QueryId}.", callbackQuery.Id);
+            }
+
             throw;
         }
     }

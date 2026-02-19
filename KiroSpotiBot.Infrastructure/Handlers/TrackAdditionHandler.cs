@@ -167,7 +167,7 @@ public class TrackAdditionHandler : ITrackAdditionHandler
             _logger.LogInformation("Created track record for {TrackId} in group {ChatId}. Duplicate: {IsDuplicate}",
                 trackId, groupChat.TelegramChatId, isDuplicate);
 
-            // Send confirmation reply with playlist link.
+            // Send confirmation reply with playlist link and "Add to Queue" button.
             var playlistUrl = $"https://open.spotify.com/playlist/{groupChat.PlaylistId}";
             var confirmationMessage = isDuplicate
                 ? $"ℹ️ **{metadata.Name}** by {metadata.ArtistName}\n\n" +
@@ -178,11 +178,24 @@ public class TrackAdditionHandler : ITrackAdditionHandler
                   $"🎵 [View Playlist]({playlistUrl})\n\n" +
                   $"Vote with 👍 or 👎 reactions!";
 
+            // Create inline keyboard with "Add to Queue" button.
+            var inlineKeyboard = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(
+                new[]
+                {
+                    new[]
+                    {
+                        Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton.WithCallbackData(
+                            text: "🎵 Add to My Queue",
+                            callbackData: $"queue:{trackId}")
+                    }
+                });
+
             await _telegramBotClient.SendMessage(
                 chatId: groupChat.TelegramChatId,
                 text: confirmationMessage,
                 parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown,
                 replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = messageId },
+                replyMarkup: inlineKeyboard,
                 linkPreviewOptions: new Telegram.Bot.Types.LinkPreviewOptions { IsDisabled = true },
                 cancellationToken: cancellationToken);
 

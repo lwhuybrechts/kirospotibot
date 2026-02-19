@@ -27,4 +27,11 @@ public interface IMessageHandler
     /// <param name="reaction">The message reaction update event.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task HandleMessageReactionAsync(MessageReactionUpdated reaction, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Handles callback queries from inline keyboard buttons.
+    /// </summary>
+    /// <param name="callbackQuery">The callback query event.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken);
 }
