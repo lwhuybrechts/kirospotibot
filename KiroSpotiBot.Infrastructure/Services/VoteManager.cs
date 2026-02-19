@@ -122,6 +122,12 @@ public class VoteManager : IVoteManager
                 return false;
             }
 
+            if (string.IsNullOrEmpty(groupChat.PlaylistId))
+            {
+                _logger.LogError("Group chat {ChatId} has no playlist configured.", telegramChatId);
+                return false;
+            }
+
             // Remove track from Spotify playlist.
             var removed = await _spotifyService.RemoveTrackFromPlaylistAsync(
                 groupChat.PlaylistId, 

@@ -281,15 +281,15 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 43: Manual Queue Addition**
     - **Validates: Requirements 20.2, 20.6**
 
-- [ ] 16. Implement chat history sync
-  - [ ] 16.1 Create ChatHistorySyncService
+- [ ]* 16. Implement chat history sync
+  - [ ]* 16.1 Create ChatHistorySyncService
     - Implement SyncFromTelegramHistoryAsync (if API allows)
     - Implement SyncFromExportedJsonAsync for JSON file upload
     - Process messages chronologically
     - Detect Spotify URLs in historical messages
     - _Requirements: 14.1, 14.2, 14.3_
   
-  - [ ] 16.2 Implement sync track processing
+  - [ ]* 16.2 Implement sync track processing
     - Create TrackRecords with original timestamps and users
     - Skip duplicates and deleted tracks
     - Add tracks to playlist in chronological order
@@ -297,7 +297,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Send summary message at end
     - _Requirements: 14.4, 14.5, 14.6, 14.7, 14.8_
   
-  - [ ] 16.3 Implement /sync command
+  - [ ]* 16.3 Implement /sync command
     - Allow administrator to trigger sync
     - Handle both API-based and file-based sync
     - Log errors to Sentry
@@ -311,18 +311,18 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 32: Sync Filtering**
     - **Validates: Requirements 14.6**
 
-- [ ] 17. Checkpoint - Verify all bot features
+- [x] 17. Checkpoint - Verify all bot features
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 18. Implement Telegram ID change detection
-  - [ ] 18.1 Add ID change detection logic
+- [ ]* 18. Implement Telegram ID change detection
+  - [ ]* 18.1 Add ID change detection logic
     - Compare current user ID with stored ID
     - Log changes to Sentry with context
     - Update user records if needed
     - _Requirements: 10.1_
 
-- [ ] 19. Implement user merge service
-  - [ ] 19.1 Create UserMergeService
+- [ ]* 19. Implement user merge service
+  - [ ]* 19.1 Create UserMergeService
     - Implement MergeUsersAsync method
     - Update all TrackRecords to reference new user ID
     - Update all Votes to reference new user ID
@@ -333,7 +333,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Log merge operation to Sentry
     - _Requirements: 10.1_
   
-  - [ ] 19.2 Create admin interface for user merging
+  - [ ]* 19.2 Create admin interface for user merging
     - Add admin page in Blazor frontend
     - Allow selecting two users to merge
     - Confirm merge operation
@@ -361,7 +361,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Display list of users who upvoted/downvoted
     - _Requirements: 15.3, 15.4, 15.5_
   
-  - [ ]* 20.4 Write property test for track metadata display
+  - [ ] 20.4 Write property test for track metadata display
     - **Property 34: Web Frontend Track Metadata Display**
     - **Validates: Requirements 15.3, 15.4, 15.5**
 
@@ -381,11 +381,11 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Show per-playlist statistics
     - _Requirements: 16.2, 16.3_
   
-  - [ ]* 21.3 Write property test for user filter accuracy
+  - [ ] 21.3 Write property test for user filter accuracy
     - **Property 35: User Filter Accuracy**
     - **Validates: Requirements 16.3**
   
-  - [ ]* 21.4 Write property test for contributor count accuracy
+  - [ ] 21.4 Write property test for contributor count accuracy
     - **Property 36: Contributor Count Accuracy**
     - **Validates: Requirements 16.2**
 
@@ -397,11 +397,11 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Allow clearing filters
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5_
   
-  - [ ]* 22.2 Write property test for genre filter accuracy
+  - [ ] 22.2 Write property test for genre filter accuracy
     - **Property 37: Genre Filter Accuracy**
     - **Validates: Requirements 17.3**
   
-  - [ ]* 22.3 Write property test for multi-genre inclusion
+  - [ ] 22.3 Write property test for multi-genre inclusion
     - **Property 38: Multi-Genre Track Inclusion**
     - **Validates: Requirements 17.5**
 
@@ -413,11 +413,11 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Redact sensitive data from logs
     - _Requirements: 10.1, 10.2, 10.4, 10.5_
   
-  - [ ]* 23.2 Write property test for error logging
+  - [ ] 23.2 Write property test for error logging
     - **Property 16: Error Logging with Context**
     - **Validates: Requirements 10.1, 10.2, 10.4**
   
-  - [ ]* 23.3 Write property test for sensitive data redaction
+  - [ ] 23.3 Write property test for sensitive data redaction
     - **Property 17: Sensitive Data Redaction in Logs**
     - **Validates: Requirements 10.5**
 
