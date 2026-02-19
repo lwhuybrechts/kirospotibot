@@ -77,4 +77,27 @@ public class TrackRecordRepository : BaseRepository<TrackRecordEntity>, ITrackRe
         var filter = $"PartitionKey eq '{telegramChatId}' and TrackSpotifyId eq '{spotifyTrackId}'";
         return await QueryAsync(filter, cancellationToken);
     }
+
+    public async Task<int> GetTrackCountAsync(long telegramChatId, CancellationToken cancellationToken = default)
+    {
+        var allRecords = await GetByPartitionKeyAsync(telegramChatId.ToString(), cancellationToken);
+        return allRecords.Count(r => !r.IsDeleted);
+    }
+
+    public async Task<IEnumerable<(long TelegramUserId, string Username, string? AvatarUrl, int TrackCount)>> GetContributorsAsync(long telegramChatId, CancellationToken cancellationToken = default)
+    {
+        var allRecords = await GetByPartitionKeyAsync(telegramChatId.ToString(), cancellationToken);
+        
+        return allRecords
+            .Where(r => !r.IsDeleted)
+            .GroupBy(r => new { r.SharedByTelegramUserId, r.SharedByUsername, r.SharedByAvatarUrl })
+            .Select(g => (
+                g.Key.SharedByTelegramUserId,
+                g.Key.SharedByUsername,
+                g.Key.SharedByAvatarUrl,
+                g.Count()
+            ))
+            .OrderByDescending(c => c.Item4)
+            .ToList();
+    }
 }

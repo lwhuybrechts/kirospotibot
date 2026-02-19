@@ -41,4 +41,31 @@ public class TrackGenreRepository : BaseRepository<TrackGenreEntity>, ITrackGenr
 
         return genres;
     }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<(string GenreName, int TrackCount)>> GetGenresForTracksAsync(IEnumerable<string> trackSpotifyIds, CancellationToken cancellationToken = default)
+    {
+        var genreCounts = new Dictionary<string, int>();
+        
+        foreach (var trackSpotifyId in trackSpotifyIds)
+        {
+            var genres = await GetGenresForTrackAsync(trackSpotifyId, cancellationToken);
+            foreach (var genre in genres)
+            {
+                if (genreCounts.ContainsKey(genre))
+                {
+                    genreCounts[genre]++;
+                }
+                else
+                {
+                    genreCounts[genre] = 1;
+                }
+            }
+        }
+
+        return genreCounts
+            .Select(kvp => (kvp.Key, kvp.Value))
+            .OrderByDescending(g => g.Value)
+            .ToList();
+    }
 }

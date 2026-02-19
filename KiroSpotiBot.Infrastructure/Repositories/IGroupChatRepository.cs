@@ -26,4 +26,9 @@ public interface IGroupChatRepository : IRepository<GroupChatEntity>
     /// Updates an existing group chat entity.
     /// </summary>
     Task<GroupChatEntity> UpdateGroupChatAsync(GroupChatEntity groupChat, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets all group chats with configured playlists.
+    /// </summary>
+    Task<IEnumerable<GroupChatEntity>> GetAllWithPlaylistsAsync(CancellationToken cancellationToken = default);
 }

@@ -57,6 +57,7 @@ public static class DependencyInjection
         
         // Register repositories.
         services.AddScoped<IGroupChatRepository, GroupChatRepository>();
+        services.AddScoped<IGroupChatMemberRepository, GroupChatMemberRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITrackRecordRepository, TrackRecordRepository>();
         services.AddScoped<IVoteRepository, VoteRepository>();

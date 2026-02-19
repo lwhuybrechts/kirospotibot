@@ -1,0 +1,135 @@
+@using KiroSpotiBot.Core.Entities
+
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-2">
+                @if (!string.IsNullOrEmpty(Track.AlbumImageUrl))
+                {
+                    <img src="@Track.AlbumImageUrl" alt="@Track.AlbumName" class="img-fluid rounded" />
+                }
+                else
+                {
+                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded" style="height: 100px;">
+                        <span>No Image</span>
+                    </div>
+                }
+            </div>
+            <div class="col-md-10">
+                <h5 class="card-title">@Track.TrackName</h5>
+                <p class="card-text">
+                    <strong>Artist:</strong> @Track.ArtistName<br />
+                    <strong>Album:</strong> @Track.AlbumName
+                </p>
+                
+                @if (Track.Genres.Any())
+                {
+                    <p class="card-text">
+                        <strong>Genres:</strong>
+                        @foreach (var genre in Track.Genres)
+                        {
+                            <span class="badge bg-secondary me-1">@genre</span>
+                        }
+                    </p>
+                }
+
+                <div class="d-flex align-items-center mb-2">
+                    @if (!string.IsNullOrEmpty(Track.SharedByAvatarUrl))
+                    {
+                        <img src="@Track.SharedByAvatarUrl" alt="@Track.SharedByUsername" class="rounded-circle me-2" style="width: 32px; height: 32px;" />
+                    }
+                    <span class="text-muted">
+                        Shared by <strong>@Track.SharedByUsername</strong> on @Track.SharedAt.ToString("MMM dd, yyyy")
+                    </span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <div class="me-4">
+                        <span class="badge bg-success">
+                            👍 @Track.UpvoteCount
+                        </span>
+                        @if (Track.Votes.Any(v => v.VoteType == "Upvote"))
+                        {
+                            <div class="mt-1">
+                                @foreach (var vote in Track.Votes.Where(v => v.VoteType == "Upvote"))
+                                {
+                                    @if (!string.IsNullOrEmpty(vote.VoterAvatarUrl))
+                                    {
+                                        <img src="@vote.VoterAvatarUrl" 
+                                             alt="@vote.VoterUsername" 
+                                             title="@vote.VoterUsername"
+                                             class="rounded-circle me-1" 
+                                             style="width: 24px; height: 24px;" />
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark me-1" title="@vote.VoterUsername">
+                                            @vote.VoterUsername.Substring(0, Math.Min(2, vote.VoterUsername.Length))
+                                        </span>
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                    
+                    <div>
+                        <span class="badge bg-danger">
+                            👎 @Track.DownvoteCount
+                        </span>
+                        @if (Track.Votes.Any(v => v.VoteType == "Downvote"))
+                        {
+                            <div class="mt-1">
+                                @foreach (var vote in Track.Votes.Where(v => v.VoteType == "Downvote"))
+                                {
+                                    @if (!string.IsNullOrEmpty(vote.VoterAvatarUrl))
+                                    {
+                                        <img src="@vote.VoterAvatarUrl" 
+                                             alt="@vote.VoterUsername" 
+                                             title="@vote.VoterUsername"
+                                             class="rounded-circle me-1" 
+                                             style="width: 24px; height: 24px;" />
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark me-1" title="@vote.VoterUsername">
+                                            @vote.VoterUsername.Substring(0, Math.Min(2, vote.VoterUsername.Length))
+                                        </span>
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    <a href="https://open.spotify.com/track/@Track.TrackSpotifyId" target="_blank" class="btn btn-sm btn-outline-success">
+                        Open in Spotify
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TrackViewModel Track { get; set; } = null!;
+
+    public class TrackViewModel
+    {
+        public string TrackRecordId { get; set; } = string.Empty;
+        public string TrackSpotifyId { get; set; } = string.Empty;
+        public string TrackName { get; set; } = string.Empty;
+        public string ArtistName { get; set; } = string.Empty;
+        public string AlbumName { get; set; } = string.Empty;
+        public string? AlbumImageUrl { get; set; }
+        public long SharedByTelegramUserId { get; set; }
+        public string SharedByUsername { get; set; } = string.Empty;
+        public string? SharedByAvatarUrl { get; set; }
+        public DateTime SharedAt { get; set; }
+        public int UpvoteCount { get; set; }
+        public int DownvoteCount { get; set; }
+        public List<string> Genres { get; set; } = new();
+        public List<VoteEntity> Votes { get; set; } = new();
+    }
+}

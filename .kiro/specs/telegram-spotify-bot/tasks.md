@@ -339,13 +339,13 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Confirm merge operation
     - Display merge history
 
-- [ ] 20. Implement Blazor frontend - Playlist pages
-  - [ ] 20.1 Create PlaylistList page
+- [x] 20. Implement Blazor frontend - Playlist pages
+  - [x] 20.1 Create PlaylistList page
     - Display all playlists with track counts
     - Link to playlist detail pages
     - _Requirements: 15.1_
   
-  - [ ] 20.2 Create PlaylistDetail page
+  - [x] 20.2 Create PlaylistDetail page
     - Display tracks with pagination (handle thousands of tracks)
     - Show track metadata (name, artist, album, genre)
     - Show who shared each track and when
@@ -355,13 +355,13 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Implement filtering by contributor and genre
     - _Requirements: 15.2, 15.3, 15.4, 15.5_
   
-  - [ ] 20.3 Create TrackCard component
+  - [x] 20.3 Create TrackCard component
     - Display track information
     - Show user avatars for sharer and voters
     - Display list of users who upvoted/downvoted
     - _Requirements: 15.3, 15.4, 15.5_
   
-  - [ ] 20.4 Write property test for track metadata display
+  - [x] 20.4 Write property test for track metadata display
     - **Property 34: Web Frontend Track Metadata Display**
     - **Validates: Requirements 15.3, 15.4, 15.5**
 

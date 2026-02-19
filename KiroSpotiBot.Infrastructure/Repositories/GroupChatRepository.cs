@@ -44,4 +44,11 @@ public class GroupChatRepository : BaseRepository<GroupChatEntity>, IGroupChatRe
     {
         return await UpdateAsync(groupChat, cancellationToken);
     }
+
+    public async Task<IEnumerable<GroupChatEntity>> GetAllWithPlaylistsAsync(CancellationToken cancellationToken = default)
+    {
+        // Query all group chats that have a playlist configured.
+        var filter = "PlaylistId ne null and PlaylistId ne ''";
+        return await QueryAsync(filter, cancellationToken);
+    }
 }

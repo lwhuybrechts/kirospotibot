@@ -23,4 +23,12 @@ public interface ITrackGenreRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The list of genre names.</returns>
     Task<IEnumerable<string>> GetGenresForTrackAsync(string trackSpotifyId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets distinct genres for all tracks in a group chat.
+    /// </summary>
+    /// <param name="trackSpotifyIds">The list of Spotify track identifiers.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The list of distinct genre names with track counts.</returns>
+    Task<IEnumerable<(string GenreName, int TrackCount)>> GetGenresForTracksAsync(IEnumerable<string> trackSpotifyIds, CancellationToken cancellationToken = default);
 }

@@ -1,0 +1,391 @@
+@page "/playlist/{ChatId:long}"
+@using KiroSpotiBot.Core.Entities
+@using KiroSpotiBot.Infrastructure.Repositories
+@using KiroSpotiBot.Core.Interfaces
+@using KiroSpotiBot.Web.Components.Shared
+@inject IGroupChatRepository GroupChatRepository
+@inject ITrackRecordRepository TrackRecordRepository
+@inject ITrackGenreRepository TrackGenreRepository
+@inject IVoteRepository VoteRepository
+@rendermode InteractiveServer
+
+<PageTitle>@playlistName - KiroSpotiBot</PageTitle>
+
+<div class="container mt-4">
+    @if (isLoading)
+    {
+        <div class="text-center mt-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (groupChat == null)
+    {
+        <div class="alert alert-danger">
+            <p>Playlist not found.</p>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1>@playlistName</h1>
+                <p class="text-muted">@totalTracks track@(totalTracks != 1 ? "s" : "")</p>
+            </div>
+            <a href="https://open.spotify.com/playlist/@groupChat.PlaylistId" target="_blank" class="btn btn-success">
+                Open in Spotify
+            </a>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Contributors</h5>
+                        @if (contributors.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var contributor in contributors)
+                                {
+                                    <button type="button" 
+                                            class="list-group-item list-group-item-action @(selectedContributor == contributor.TelegramUserId ? "active" : "")"
+                                            @onclick="() => FilterByContributor(contributor.TelegramUserId)">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>@contributor.Username</span>
+                                            <span class="badge bg-primary rounded-pill">@contributor.TrackCount</span>
+                                        </div>
+                                    </button>
+                                }
+                            </div>
+                            @if (selectedContributor.HasValue)
+                            {
+                                <button class="btn btn-sm btn-outline-secondary mt-2" @onclick="ClearContributorFilter">
+                                    Clear Filter
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No contributors yet.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Genres</h5>
+                        @if (genres.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var genre in genres)
+                                {
+                                    <button type="button" 
+                                            class="list-group-item list-group-item-action @(selectedGenre == genre.GenreName ? "active" : "")"
+                                            @onclick="() => FilterByGenre(genre.GenreName)">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>@genre.GenreName</span>
+                                            <span class="badge bg-primary rounded-pill">@genre.TrackCount</span>
+                                        </div>
+                                    </button>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(selectedGenre))
+                            {
+                                <button class="btn btn-sm btn-outline-secondary mt-2" @onclick="ClearGenreFilter">
+                                    Clear Filter
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No genres available.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <h3>Tracks</h3>
+                @if (filteredTracks.Any())
+                {
+                    <div class="row">
+                        @foreach (var track in paginatedTracks)
+                        {
+                            <div class="col-12 mb-3">
+                                <TrackCard Track="@ConvertToTrackCardViewModel(track)" />
+                            </div>
+                        }
+                    </div>
+
+                    @if (totalPages > 1)
+                    {
+                        <nav aria-label="Track pagination">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="() => ChangePage(currentPage - 1)" disabled="@(currentPage == 1)">
+                                        Previous
+                                    </button>
+                                </li>
+                                @for (int i = 1; i <= totalPages; i++)
+                                {
+                                    var pageNum = i;
+                                    <li class="page-item @(currentPage == pageNum ? "active" : "")">
+                                        <button class="page-link" @onclick="() => ChangePage(pageNum)">
+                                            @pageNum
+                                        </button>
+                                    </li>
+                                }
+                                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                    <button class="page-link" @onclick="() => ChangePage(currentPage + 1)" disabled="@(currentPage == totalPages)">
+                                        Next
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <p>No tracks found matching the current filters.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public long ChatId { get; set; }
+
+    private GroupChatEntity? groupChat;
+    private string playlistName = "Loading...";
+    private int totalTracks = 0;
+    private bool isLoading = true;
+
+    private List<TrackViewModel> allTracks = new();
+    private List<TrackViewModel> filteredTracks = new();
+    private List<TrackViewModel> paginatedTracks = new();
+    
+    private List<ContributorViewModel> contributors = new();
+    private List<GenreViewModel> genres = new();
+
+    private long? selectedContributor = null;
+    private string? selectedGenre = null;
+
+    private int currentPage = 1;
+    private int pageSize = 20;
+    private int totalPages = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPlaylistDataAsync();
+    }
+
+    private async Task LoadPlaylistDataAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            groupChat = await GroupChatRepository.GetByTelegramChatIdAsync(ChatId);
+            
+            if (groupChat == null)
+            {
+                return;
+            }
+
+            playlistName = groupChat.PlaylistName ?? "Unnamed Playlist";
+
+            // Load all tracks.
+            var trackRecords = await TrackRecordRepository.GetByGroupChatAsync(ChatId, 0, 10000);
+            var nonDeletedTracks = trackRecords.Where(t => !t.IsDeleted).ToList();
+            totalTracks = nonDeletedTracks.Count;
+
+            // Load track genres.
+            var trackSpotifyIds = nonDeletedTracks.Select(t => t.TrackSpotifyId).Distinct().ToList();
+            var trackGenresMap = new Dictionary<string, List<string>>();
+            
+            foreach (var trackId in trackSpotifyIds)
+            {
+                var trackGenres = await TrackGenreRepository.GetGenresForTrackAsync(trackId);
+                trackGenresMap[trackId] = trackGenres.ToList();
+            }
+
+            // Load votes for all tracks.
+            var votesMap = new Dictionary<string, List<VoteEntity>>();
+            foreach (var track in nonDeletedTracks)
+            {
+                var votes = await VoteRepository.GetByTrackRecordAsync(track.TrackRecordId);
+                votesMap[track.TrackRecordId] = votes.ToList();
+            }
+
+            // Build track view models.
+            allTracks = nonDeletedTracks.Select(t => new TrackViewModel
+            {
+                TrackRecordId = t.TrackRecordId,
+                TrackSpotifyId = t.TrackSpotifyId,
+                TrackName = t.TrackName,
+                ArtistName = t.ArtistName,
+                AlbumName = t.AlbumName,
+                AlbumImageUrl = t.AlbumImageUrl,
+                SharedByTelegramUserId = t.SharedByTelegramUserId,
+                SharedByUsername = t.SharedByUsername,
+                SharedByAvatarUrl = t.SharedByAvatarUrl,
+                SharedAt = t.SharedAt,
+                UpvoteCount = t.UpvoteCount,
+                DownvoteCount = t.DownvoteCount,
+                Genres = trackGenresMap.ContainsKey(t.TrackSpotifyId) ? trackGenresMap[t.TrackSpotifyId] : new List<string>(),
+                Votes = votesMap.ContainsKey(t.TrackRecordId) ? votesMap[t.TrackRecordId] : new List<VoteEntity>()
+            }).ToList();
+
+            // Load contributors.
+            var contributorData = await TrackRecordRepository.GetContributorsAsync(ChatId);
+            contributors = contributorData.Select(c => new ContributorViewModel
+            {
+                TelegramUserId = c.TelegramUserId,
+                Username = c.Username,
+                AvatarUrl = c.AvatarUrl,
+                TrackCount = c.TrackCount
+            }).ToList();
+
+            // Load genres.
+            var genreData = await TrackGenreRepository.GetGenresForTracksAsync(trackSpotifyIds);
+            genres = genreData.Select(g => new GenreViewModel
+            {
+                GenreName = g.GenreName,
+                TrackCount = g.TrackCount
+            }).ToList();
+
+            ApplyFilters();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void FilterByContributor(long userId)
+    {
+        selectedContributor = userId;
+        currentPage = 1;
+        ApplyFilters();
+    }
+
+    private void ClearContributorFilter()
+    {
+        selectedContributor = null;
+        currentPage = 1;
+        ApplyFilters();
+    }
+
+    private void FilterByGenre(string genreName)
+    {
+        selectedGenre = genreName;
+        currentPage = 1;
+        ApplyFilters();
+    }
+
+    private void ClearGenreFilter()
+    {
+        selectedGenre = null;
+        currentPage = 1;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        filteredTracks = allTracks;
+
+        if (selectedContributor.HasValue)
+        {
+            filteredTracks = filteredTracks.Where(t => t.SharedByTelegramUserId == selectedContributor.Value).ToList();
+        }
+
+        if (!string.IsNullOrEmpty(selectedGenre))
+        {
+            filteredTracks = filteredTracks.Where(t => t.Genres.Contains(selectedGenre)).ToList();
+        }
+
+        totalPages = (int)Math.Ceiling(filteredTracks.Count / (double)pageSize);
+        UpdatePagination();
+    }
+
+    private void ChangePage(int page)
+    {
+        if (page < 1 || page > totalPages)
+        {
+            return;
+        }
+
+        currentPage = page;
+        UpdatePagination();
+    }
+
+    private void UpdatePagination()
+    {
+        paginatedTracks = filteredTracks
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private TrackCard.TrackViewModel ConvertToTrackCardViewModel(TrackViewModel track)
+    {
+        return new TrackCard.TrackViewModel
+        {
+            TrackRecordId = track.TrackRecordId,
+            TrackSpotifyId = track.TrackSpotifyId,
+            TrackName = track.TrackName,
+            ArtistName = track.ArtistName,
+            AlbumName = track.AlbumName,
+            AlbumImageUrl = track.AlbumImageUrl,
+            SharedByTelegramUserId = track.SharedByTelegramUserId,
+            SharedByUsername = track.SharedByUsername,
+            SharedByAvatarUrl = track.SharedByAvatarUrl,
+            SharedAt = track.SharedAt,
+            UpvoteCount = track.UpvoteCount,
+            DownvoteCount = track.DownvoteCount,
+            Genres = track.Genres,
+            Votes = track.Votes
+        };
+    }
+
+    private class TrackViewModel
+    {
+        public string TrackRecordId { get; set; } = string.Empty;
+        public string TrackSpotifyId { get; set; } = string.Empty;
+        public string TrackName { get; set; } = string.Empty;
+        public string ArtistName { get; set; } = string.Empty;
+        public string AlbumName { get; set; } = string.Empty;
+        public string? AlbumImageUrl { get; set; }
+        public long SharedByTelegramUserId { get; set; }
+        public string SharedByUsername { get; set; } = string.Empty;
+        public string? SharedByAvatarUrl { get; set; }
+        public DateTime SharedAt { get; set; }
+        public int UpvoteCount { get; set; }
+        public int DownvoteCount { get; set; }
+        public List<string> Genres { get; set; } = new();
+        public List<VoteEntity> Votes { get; set; } = new();
+    }
+
+    private class ContributorViewModel
+    {
+        public long TelegramUserId { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string? AvatarUrl { get; set; }
+        public int TrackCount { get; set; }
+    }
+
+    private class GenreViewModel
+    {
+        public string GenreName { get; set; } = string.Empty;
+        public int TrackCount { get; set; }
+    }
+}

@@ -53,4 +53,14 @@ public interface ITrackRecordRepository : IRepository<TrackRecordEntity>
         long telegramChatId, 
         string spotifyTrackId, 
         CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the count of non-deleted tracks for a group chat.
+    /// </summary>
+    Task<int> GetTrackCountAsync(long telegramChatId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets distinct contributors (users who shared tracks) for a group chat.
+    /// </summary>
+    Task<IEnumerable<(long TelegramUserId, string Username, string? AvatarUrl, int TrackCount)>> GetContributorsAsync(long telegramChatId, CancellationToken cancellationToken = default);
 }
