@@ -124,7 +124,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 1: Webhook Payload Parsing**
     - **Validates: Requirements 1.2**
   
-  - [ ]* 8.3 Write property test for invalid webhook handling
+  - [x] 8.3 Write property test for invalid webhook handling
     - **Property 2: Invalid Webhook Handling**
     - **Validates: Requirements 1.3, 10.3**
 
