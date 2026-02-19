@@ -17,6 +17,7 @@ public class TrackAdditionHandler : ITrackAdditionHandler
     private readonly ITrackRecordRepository _trackRecordRepository;
     private readonly ITrackMetadataService _trackMetadataService;
     private readonly ISpotifyService _spotifyService;
+    private readonly IAutoQueueService _autoQueueService;
 
     public TrackAdditionHandler(
         ILogger<TrackAdditionHandler> logger,
@@ -24,7 +25,8 @@ public class TrackAdditionHandler : ITrackAdditionHandler
         IUserRepository userRepository,
         ITrackRecordRepository trackRecordRepository,
         ITrackMetadataService trackMetadataService,
-        ISpotifyService spotifyService)
+        ISpotifyService spotifyService,
+        IAutoQueueService autoQueueService)
     {
         _logger = logger;
         _telegramBotClient = telegramBotClient;
@@ -32,6 +34,7 @@ public class TrackAdditionHandler : ITrackAdditionHandler
         _trackRecordRepository = trackRecordRepository;
         _trackMetadataService = trackMetadataService;
         _spotifyService = spotifyService;
+        _autoQueueService = autoQueueService;
     }
 
     /// <summary>
@@ -185,6 +188,15 @@ public class TrackAdditionHandler : ITrackAdditionHandler
 
             _logger.LogInformation("Sent confirmation message for track {TrackId} in group {ChatId}.",
                 trackId, groupChat.TelegramChatId);
+
+            // Trigger auto-queue for users with auto-queue enabled (only if track was actually added, not duplicate).
+            if (!isDuplicate)
+            {
+                await _autoQueueService.TriggerAutoQueueAsync(
+                    groupChat.TelegramChatId,
+                    trackId,
+                    cancellationToken);
+            }
         }
         catch (Exception ex)
         {

@@ -23,4 +23,12 @@ public interface IUserGroupConfigRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The saved configuration.</returns>
     Task<UserGroupConfigEntity> UpsertAsync(UserGroupConfigEntity config, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets all users with auto-queue enabled for a specific group chat.
+    /// </summary>
+    /// <param name="telegramChatId">The Telegram chat ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of user group configurations with auto-queue enabled.</returns>
+    Task<IEnumerable<UserGroupConfigEntity>> GetUsersWithAutoQueueEnabledAsync(long telegramChatId, CancellationToken cancellationToken = default);
 }

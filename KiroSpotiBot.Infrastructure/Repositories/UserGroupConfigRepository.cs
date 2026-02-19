@@ -22,8 +22,15 @@ public class UserGroupConfigRepository : BaseRepository<UserGroupConfigEntity>, 
         return await GetAsync(telegramChatId.ToString(), telegramUserId.ToString(), cancellationToken);
     }
 
-    public async Task<UserGroupConfigEntity> UpsertAsync(UserGroupConfigEntity config, CancellationToken cancellationToken = default)
+    public new async Task<UserGroupConfigEntity> UpsertAsync(UserGroupConfigEntity config, CancellationToken cancellationToken = default)
     {
         return await base.UpsertAsync(config, cancellationToken);
+    }
+
+    public async Task<IEnumerable<UserGroupConfigEntity>> GetUsersWithAutoQueueEnabledAsync(long telegramChatId, CancellationToken cancellationToken = default)
+    {
+        var partitionKey = telegramChatId.ToString();
+        var filter = $"PartitionKey eq '{partitionKey}' and AutoQueueEnabled eq true";
+        return await QueryAsync(filter, cancellationToken);
     }
 }

@@ -252,15 +252,15 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 28: Downvote Threshold Validation**
     - **Validates: Requirements 18.3**
 
-- [ ] 14. Implement auto-queue functionality
-  - [ ] 14.1 Implement auto-queue trigger
+- [x] 14. Implement auto-queue functionality
+  - [x] 14.1 Implement auto-queue trigger
     - Check UserGroupConfig for users with auto-queue enabled
     - Verify user is currently playing music
     - Add track to user's Spotify queue
     - Handle failures silently
     - _Requirements: 19.3, 19.4, 19.5_
   
-  - [ ] 14.2 Write property test for auto-queue conditional execution
+  - [x] 14.2 Write property test for auto-queue conditional execution
     - **Property 41: Auto-Queue Conditional Execution**
     - **Validates: Requirements 19.3, 19.4**
 

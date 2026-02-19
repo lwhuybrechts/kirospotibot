@@ -74,6 +74,9 @@ public static class DependencyInjection
         // Register vote manager.
         services.AddScoped<IVoteManager, VoteManager>();
         
+        // Register auto-queue service.
+        services.AddScoped<IAutoQueueService, AutoQueueService>();
+        
         // Register Spotify URL detector.
         services.AddSingleton<ISpotifyUrlDetector, Core.Services.SpotifyUrlDetector>();
         
