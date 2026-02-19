@@ -132,9 +132,8 @@ public class TelegramUpdateHandler : ITelegramUpdateHandler
             _logger.LogInformation("Processing message reaction for message {MessageId} in chat {ChatId}.",
                 reaction.MessageId, reaction.Chat.Id);
 
-            // TODO: Implement reaction handling logic in Task 11.
-            // For now, just log the reaction.
-            await Task.CompletedTask;
+            // Delegate to MessageHandler for business logic.
+            await _messageHandler.HandleMessageReactionAsync(reaction, cancellationToken);
         }
         catch (Exception ex)
         {

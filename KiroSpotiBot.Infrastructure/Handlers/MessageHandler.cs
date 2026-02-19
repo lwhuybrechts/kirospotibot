@@ -19,6 +19,8 @@ public class MessageHandler : IMessageHandler
     private readonly IGroupConfigurationValidator _configurationValidator;
     private readonly ITrackAdditionHandler _trackAdditionHandler;
     private readonly IGroupSetupHandler _groupSetupHandler;
+    private readonly IVoteManager _voteManager;
+    private readonly ITrackRecordRepository _trackRecordRepository;
 
     public MessageHandler(
         ILogger<MessageHandler> logger,
@@ -28,7 +30,9 @@ public class MessageHandler : IMessageHandler
         ISpotifyUrlDetector spotifyUrlDetector,
         IGroupConfigurationValidator configurationValidator,
         ITrackAdditionHandler trackAdditionHandler,
-        IGroupSetupHandler groupSetupHandler)
+        IGroupSetupHandler groupSetupHandler,
+        IVoteManager voteManager,
+        ITrackRecordRepository trackRecordRepository)
     {
         _logger = logger;
         _telegramBotClient = telegramBotClient;
@@ -38,6 +42,8 @@ public class MessageHandler : IMessageHandler
         _configurationValidator = configurationValidator;
         _trackAdditionHandler = trackAdditionHandler;
         _groupSetupHandler = groupSetupHandler;
+        _voteManager = voteManager;
+        _trackRecordRepository = trackRecordRepository;
     }
 
     /// <summary>
@@ -130,5 +136,165 @@ public class MessageHandler : IMessageHandler
     public async Task HandleBotAddedToGroupAsync(ChatMemberUpdated update, CancellationToken cancellationToken)
     {
         await _groupSetupHandler.HandleBotAddedToGroupAsync(update, cancellationToken);
+    }
+
+    /// <summary>
+    /// Handles message reaction updates (upvotes/downvotes).
+    /// </summary>
+    public async Task HandleMessageReactionAsync(MessageReactionUpdated reaction, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Ensure we have a user.
+            if (reaction.User == null)
+            {
+                _logger.LogWarning("Received reaction update without user information.");
+                return;
+            }
+
+            // Get the track record associated with this message.
+            var trackRecords = await _trackRecordRepository.GetByGroupChatAsync(
+                reaction.Chat.Id, 
+                skip: 0, 
+                take: 1000, 
+                cancellationToken);
+
+            var trackRecord = trackRecords.FirstOrDefault(tr => tr.TelegramMessageId == reaction.MessageId);
+            if (trackRecord == null)
+            {
+                _logger.LogDebug("No track record found for message {MessageId} in chat {ChatId}.", 
+                    reaction.MessageId, reaction.Chat.Id);
+                return;
+            }
+
+            // Check if track is deleted.
+            if (trackRecord.IsDeleted)
+            {
+                _logger.LogInformation("Ignoring reaction on deleted track {TrackRecordId}.", trackRecord.TrackRecordId);
+                return;
+            }
+
+            // Ensure user exists in database.
+            var user = await _userRepository.GetByTelegramUserIdAsync(reaction.User.Id, cancellationToken);
+            if (user == null)
+            {
+                _logger.LogInformation("Creating new user record for Telegram user {UserId}.", reaction.User.Id);
+                user = await _userRepository.CreateUserAsync(reaction.User.Id, cancellationToken);
+            }
+
+            // Process new reactions (added).
+            foreach (var reactionType in reaction.NewReaction)
+            {
+                string? voteType = null;
+
+                // Check for thumbs up emoji.
+                if (reactionType.Type == Telegram.Bot.Types.Enums.ReactionTypeKind.Emoji)
+                {
+                    var emojiReaction = reactionType as Telegram.Bot.Types.ReactionTypeEmoji;
+                    if (emojiReaction?.Emoji == "👍")
+                    {
+                        voteType = "Upvote";
+                    }
+                    else if (emojiReaction?.Emoji == "👎")
+                    {
+                        voteType = "Downvote";
+                    }
+                }
+
+                if (voteType != null)
+                {
+                    _logger.LogInformation("User {UserId} added {VoteType} to track {TrackRecordId}.", 
+                        reaction.User.Id, voteType, trackRecord.TrackRecordId);
+
+                    var trackRemoved = await _voteManager.RecordVoteAsync(
+                        trackRecord.TrackRecordId,
+                        reaction.Chat.Id,
+                        reaction.User.Id,
+                        voteType,
+                        reaction.User.Username ?? reaction.User.FirstName,
+                        null, // Avatar URL not available in reaction update.
+                        cancellationToken);
+
+                    if (trackRemoved)
+                    {
+                        // Send notification that track was removed.
+                        await _telegramBotClient.SendMessage(
+                            chatId: reaction.Chat.Id,
+                            text: $"🗑️ Track \"{trackRecord.TrackName}\" by {trackRecord.ArtistName} was removed from the playlist due to reaching the downvote threshold.",
+                            cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        // Update confirmation message with new vote counts.
+                        var voteCounts = await _voteManager.GetVoteCountsAsync(trackRecord.TrackRecordId, cancellationToken);
+                        
+                        try
+                        {
+                            await _telegramBotClient.EditMessageText(
+                                chatId: reaction.Chat.Id,
+                                messageId: reaction.MessageId,
+                                text: $"✅ Added \"{trackRecord.TrackName}\" by {trackRecord.ArtistName} to the playlist!\n\n" +
+                                      $"👍 {voteCounts.upvotes} | 👎 {voteCounts.downvotes}",
+                                cancellationToken: cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to update message {MessageId} with vote counts.", reaction.MessageId);
+                        }
+                    }
+                }
+            }
+
+            // Process removed reactions.
+            foreach (var reactionType in reaction.OldReaction)
+            {
+                bool isVoteReaction = false;
+
+                // Check if it's a vote reaction being removed.
+                if (reactionType.Type == Telegram.Bot.Types.Enums.ReactionTypeKind.Emoji)
+                {
+                    var emojiReaction = reactionType as Telegram.Bot.Types.ReactionTypeEmoji;
+                    if (emojiReaction?.Emoji == "👍" || emojiReaction?.Emoji == "👎")
+                    {
+                        isVoteReaction = true;
+                    }
+                }
+
+                if (isVoteReaction)
+                {
+                    _logger.LogInformation("User {UserId} removed vote from track {TrackRecordId}.", 
+                        reaction.User.Id, trackRecord.TrackRecordId);
+
+                    await _voteManager.RemoveVoteAsync(
+                        trackRecord.TrackRecordId,
+                        reaction.Chat.Id,
+                        reaction.User.Id,
+                        cancellationToken);
+
+                    // Update confirmation message with new vote counts.
+                    var voteCounts = await _voteManager.GetVoteCountsAsync(trackRecord.TrackRecordId, cancellationToken);
+                    
+                    try
+                    {
+                        await _telegramBotClient.EditMessageText(
+                            chatId: reaction.Chat.Id,
+                            messageId: reaction.MessageId,
+                            text: $"✅ Added \"{trackRecord.TrackName}\" by {trackRecord.ArtistName} to the playlist!\n\n" +
+                                  $"👍 {voteCounts.upvotes} | 👎 {voteCounts.downvotes}",
+                            cancellationToken: cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to update message {MessageId} with vote counts.", reaction.MessageId);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling message reaction for message {MessageId} in chat {ChatId}.", 
+                reaction.MessageId, reaction.Chat.Id);
+            throw;
+        }
     }
 }

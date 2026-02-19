@@ -26,6 +26,7 @@ public class TrackAdditionWithCredentialsPropertyTests
     private readonly ITrackRecordRepository _trackRecordRepository;
     private readonly Mock<ISpotifyService> _mockSpotifyService;
     private readonly Mock<ITrackMetadataService> _mockTrackMetadataService;
+    private readonly Mock<IEncryptionService> _mockEncryptionService;
     private readonly TableClient _groupChatsTable;
     private readonly TableClient _usersTable;
     private readonly TableClient _trackRecordsTable;
@@ -39,12 +40,15 @@ public class TrackAdditionWithCredentialsPropertyTests
         var groupChatLogger = Mock.Of<ILogger<BaseRepository<GroupChatEntity>>>();
         var userLogger = Mock.Of<ILogger<BaseRepository<UserEntity>>>();
         var trackRecordLogger = Mock.Of<ILogger<BaseRepository<TrackRecordEntity>>>();
-        var encryptionService = Mock.Of<IEncryptionService>();
+        
+        _mockEncryptionService = new Mock<IEncryptionService>();
+        _mockEncryptionService.Setup(e => e.Encrypt(It.IsAny<string>())).Returns<string>(s => s);
+        _mockEncryptionService.Setup(e => e.Decrypt(It.IsAny<string>())).Returns<string>(s => s);
         
         _groupChatRepository = new GroupChatRepository(_tableServiceClient, groupChatLogger);
         _userRepository = new UserRepository(
             _tableServiceClient, 
-            encryptionService,
+            _mockEncryptionService.Object,
             userLogger);
         _trackRecordRepository = new TrackRecordRepository(_tableServiceClient, trackRecordLogger);
         

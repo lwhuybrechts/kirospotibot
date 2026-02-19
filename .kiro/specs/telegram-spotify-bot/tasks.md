@@ -176,22 +176,22 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 19: Track Metadata Normalization**
     - **Validates: Requirements 11.5**
 
-- [ ] 11. Implement voting system
-  - [ ] 11.1 Create VoteManager service
+- [x] 11. Implement voting system
+  - [x] 11.1 Create VoteManager service
     - Implement RecordVoteAsync to handle upvotes and downvotes
     - Implement RemoveVoteAsync for vote removal
     - Update denormalized vote counts in TrackRecord
     - Check if track should be removed based on threshold
     - _Requirements: 12.3, 12.4, 12.6, 12.7, 12.8_
   
-  - [ ] 11.2 Implement reaction handler
+  - [x] 11.2 Implement reaction handler
     - Implement HandleMessageReactionAsync
     - Detect thumbs up/down reactions
     - Call VoteManager to record votes
     - Update confirmation message with vote counts
     - _Requirements: 12.1, 12.8_
   
-  - [ ] 11.3 Implement automatic track removal
+  - [x] 11.3 Implement automatic track removal
     - Check downvote count against threshold
     - Remove track from Spotify playlist when threshold reached
     - Mark TrackRecord as deleted
@@ -199,19 +199,19 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Prevent further voting on deleted tracks
     - _Requirements: 13.1, 13.3, 13.4, 13.5, 12.9_
   
-  - [ ]* 11.4 Write property test for vote recording
+  - [x] 11.4 Write property test for vote recording
     - **Property 21: Vote Recording and Updates**
     - **Validates: Requirements 12.3, 12.4, 12.6**
   
-  - [ ]* 11.5 Write property test for one vote per user
+  - [x] 11.5 Write property test for one vote per user
     - **Property 22: One Vote Per User Per Track**
     - **Validates: Requirements 12.5**
   
-  - [ ]* 11.6 Write property test for automatic removal
+  - [x] 11.6 Write property test for automatic removal
     - **Property 26: Automatic Track Removal at Threshold**
     - **Validates: Requirements 13.1, 13.3, 13.5**
   
-  - [ ]* 11.7 Write property test for deleted track re-addition prevention
+  - [x] 11.7 Write property test for deleted track re-addition prevention
     - **Property 27: Deleted Track Re-Addition Prevention**
     - **Validates: Requirements 13.6**
 

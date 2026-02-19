@@ -20,4 +20,11 @@ public interface IMessageHandler
     /// <param name="update">The chat member update event.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task HandleBotAddedToGroupAsync(ChatMemberUpdated update, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Handles message reaction updates (upvotes/downvotes).
+    /// </summary>
+    /// <param name="reaction">The message reaction update event.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task HandleMessageReactionAsync(MessageReactionUpdated reaction, CancellationToken cancellationToken);
 }
