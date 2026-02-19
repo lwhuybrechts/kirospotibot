@@ -33,7 +33,22 @@ dotnet build
 ```
 
 ### Run Tests
+
+**CRITICAL: Azurite must be running before executing tests that interact with Azure Table Storage.**
+
+Tests that require data persistence will hang indefinitely if Azurite is not running.
+
 ```bash
+# Start Azurite (in a separate terminal or as a background process)
+azurite --silent --location ./bin/azurite --debug ./bin/azurite/debug.log
+
+# Then run tests
+dotnet test
+```
+
+**Windows PowerShell (background process):**
+```powershell
+Start-Process azurite -ArgumentList "--silent", "--location", "./bin/azurite", "--debug", "./bin/azurite/debug.log" -WindowStyle Hidden
 dotnet test
 ```
 

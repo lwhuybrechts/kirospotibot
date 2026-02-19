@@ -120,7 +120,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Log errors to Sentry
     - _Requirements: 1.2, 1.3, 10.3_
   
-  - [ ]* 8.2 Write property test for webhook payload parsing
+  - [x] 8.2 Write property test for webhook payload parsing
     - **Property 1: Webhook Payload Parsing**
     - **Validates: Requirements 1.2**
   

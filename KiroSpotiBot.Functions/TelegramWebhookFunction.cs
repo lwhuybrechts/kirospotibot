@@ -50,10 +50,14 @@ public class TelegramWebhookFunction
             }
 
             // Parse Telegram update from request body.
+            // Use Telegram.Bot's JsonBotAPI.Options for correct snake_case deserialization.
             Update? update;
             try
             {
-                update = await req.ReadFromJsonAsync<Update>(cancellationToken);
+                using var reader = new StreamReader(req.Body);
+                var body = await reader.ReadToEndAsync(cancellationToken);
+                update = System.Text.Json.JsonSerializer.Deserialize<Update>(body, Telegram.Bot.JsonBotAPI.Options);
+                
                 if (update == null)
                 {
                     _logger.LogWarning("Received null update from Telegram webhook.");
