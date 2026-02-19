@@ -13,13 +13,16 @@ public class TelegramUpdateHandler : ITelegramUpdateHandler
 {
     private readonly ILogger<TelegramUpdateHandler> _logger;
     private readonly ITelegramBotClient _telegramBotClient;
+    private readonly IMessageHandler _messageHandler;
 
     public TelegramUpdateHandler(
         ILogger<TelegramUpdateHandler> logger,
-        ITelegramBotClient telegramBotClient)
+        ITelegramBotClient telegramBotClient,
+        IMessageHandler messageHandler)
     {
         _logger = logger;
         _telegramBotClient = telegramBotClient;
+        _messageHandler = messageHandler;
     }
 
     /// <summary>
@@ -84,11 +87,8 @@ public class TelegramUpdateHandler : ITelegramUpdateHandler
             _logger.LogInformation("Processing message {MessageId} from chat {ChatId}.",
                 message.MessageId, message.Chat.Id);
 
-            // TODO: Implement message handling logic in Task 9.
-            // For now, just log the message.
-            _logger.LogDebug("Message text: {Text}", message.Text);
-
-            await Task.CompletedTask;
+            // Delegate to MessageHandler for business logic.
+            await _messageHandler.HandleMessageAsync(message, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -163,13 +163,8 @@ public class TelegramUpdateHandler : ITelegramUpdateHandler
                 _logger.LogInformation("Bot was added to group {ChatId} by user {UserId}.",
                     update.Chat.Id, update.From.Id);
 
-                // TODO: Implement bot added to group logic in Task 9.
-                // For now, just send a welcome message.
-                await _telegramBotClient.SendMessage(
-                    chatId: update.Chat.Id,
-                    text: "👋 Hello! I'm KiroSpotiBot. I'll help you build collaborative Spotify playlists.\n\n" +
-                          "The user who added me is now the administrator and can configure the bot.",
-                    cancellationToken: cancellationToken);
+                // Delegate to MessageHandler for business logic.
+                await _messageHandler.HandleBotAddedToGroupAsync(update, cancellationToken);
             }
         }
         catch (Exception ex)

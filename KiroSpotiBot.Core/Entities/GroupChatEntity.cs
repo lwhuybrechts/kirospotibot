@@ -18,7 +18,7 @@ public class GroupChatEntity : MyTableEntity
     }
 
     // Business properties.
-    public string AdministratorTelegramUserId { get; set; } = string.Empty;
+    public long AdministratorTelegramUserId { get; set; }
     public string? PlaylistId { get; set; }
     public string? PlaylistName { get; set; }
     public int DownvoteThreshold { get; set; } = 3;
@@ -33,6 +33,6 @@ public class GroupChatEntity : MyTableEntity
     public GroupChatEntity(long telegramChatId, long administratorTelegramUserId) : this()
     {
         TelegramChatId = telegramChatId;
-        AdministratorTelegramUserId = administratorTelegramUserId.ToString();
+        AdministratorTelegramUserId = administratorTelegramUserId;
     }
 }

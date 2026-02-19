@@ -128,22 +128,22 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 2: Invalid Webhook Handling**
     - **Validates: Requirements 1.3, 10.3**
 
-- [ ] 9. Implement message handler core logic
-  - [ ] 9.1 Create MessageHandler service
+- [x] 9. Implement message handler core logic
+  - [x] 9.1 Create MessageHandler service
     - Implement HandleMessageAsync for text messages
     - Ensure user exists in Table Storage (create if needed)
     - Detect Spotify URLs in message text
     - Retrieve group configuration from Table Storage
     - _Requirements: 1.2, 2.1, 9.4_
   
-  - [ ] 9.2 Implement bot added to group handler
+  - [x] 9.2 Implement bot added to group handler
     - Implement HandleBotAddedToGroupAsync
     - Create group chat record in Table Storage
     - Set administrator to user who added bot
     - Send welcome message explaining administrator privileges
     - _Requirements: 3.1, 3.2, 3.3_
   
-  - [ ] 9.3 Implement configuration state validation
+  - [x] 9.3 Implement configuration state validation
     - Check if group has Spotify authentication
     - Check if group has configured playlist
     - Send appropriate prompts if configuration incomplete
@@ -164,15 +164,15 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Send confirmation reply with playlist link
     - _Requirements: 6.1, 6.2, 6.3, 11.1, 11.2, 11.3_
   
-  - [ ]* 10.3 Write property test for track addition with credentials
+  - [ ] 10.3 Write property test for track addition with credentials
     - **Property 11: Track Addition with Credentials**
     - **Validates: Requirements 6.1**
   
-  - [ ]* 10.4 Write property test for duplicate detection
+  - [ ] 10.4 Write property test for duplicate detection
     - **Property 12: Duplicate Track Detection**
     - **Validates: Requirements 6.3, 11.3**
   
-  - [ ]* 10.5 Write property test for metadata normalization
+  - [ ] 10.5 Write property test for metadata normalization
     - **Property 19: Track Metadata Normalization**
     - **Validates: Requirements 11.5**
 
