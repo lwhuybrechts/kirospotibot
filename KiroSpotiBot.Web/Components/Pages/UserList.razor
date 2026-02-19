@@ -1,0 +1,127 @@
+@page "/users"
+@using KiroSpotiBot.Core.Entities
+@using KiroSpotiBot.Infrastructure.Repositories
+@inject IUserRepository UserRepository
+@inject ITrackRecordRepository TrackRecordRepository
+@rendermode InteractiveServer
+
+<PageTitle>Users - KiroSpotiBot</PageTitle>
+
+<div class="container mt-4">
+    <h1>Users</h1>
+    
+    @if (isLoading)
+    {
+        <div class="text-center mt-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (users == null || !users.Any())
+    {
+        <div class="alert alert-info mt-4">
+            <p>No users found. Users will appear here once they start sharing tracks.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row mt-4">
+            @foreach (var user in users)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                                {
+                                    <img src="@user.AvatarUrl" alt="@user.Username" class="rounded-circle me-3" style="width: 50px; height: 50px;" />
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                        <span>@GetInitials(user.Username)</span>
+                                    </div>
+                                }
+                                <div>
+                                    <h5 class="card-title mb-0">@user.Username</h5>
+                                    <small class="text-muted">@user.TrackCount track@(user.TrackCount != 1 ? "s" : "") shared</small>
+                                </div>
+                            </div>
+                            <a href="/user/@user.TelegramUserId" class="btn btn-primary w-100">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<UserViewModel>? users;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        isLoading = true;
+        
+        try
+        {
+            var allUsers = await UserRepository.GetAllUsersAsync();
+            var userViewModels = new List<UserViewModel>();
+
+            foreach (var user in allUsers)
+            {
+                // Get basic track count for this user.
+                var trackCount = await TrackRecordRepository.GetTrackCountByUserAsync(user.TelegramUserId);
+                
+                // Only include users who have shared tracks.
+                if (trackCount > 0)
+                {
+                    // Get username from track records (denormalized).
+                    var userTracks = await TrackRecordRepository.GetByUserAsync(user.TelegramUserId, 0, 1);
+                    var firstTrack = userTracks.FirstOrDefault();
+
+                    userViewModels.Add(new UserViewModel
+                    {
+                        TelegramUserId = user.TelegramUserId,
+                        Username = firstTrack?.SharedByUsername ?? $"User {user.TelegramUserId}",
+                        AvatarUrl = user.TelegramAvatarUrl ?? firstTrack?.SharedByAvatarUrl,
+                        TrackCount = trackCount
+                    });
+                }
+            }
+
+            users = userViewModels.OrderByDescending(u => u.TrackCount).ToList();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetInitials(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            return "?";
+        
+        var parts = username.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        
+        return username[0].ToString().ToUpper();
+    }
+
+    private class UserViewModel
+    {
+        public long TelegramUserId { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string? AvatarUrl { get; set; }
+        public int TrackCount { get; set; }
+    }
+}

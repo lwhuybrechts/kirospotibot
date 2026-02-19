@@ -42,4 +42,9 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Updates an existing user entity.
     /// </summary>
     Task<UserEntity> UpdateUserAsync(UserEntity user, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets all users with their contribution statistics.
+    /// </summary>
+    Task<IEnumerable<UserEntity>> GetAllUsersAsync(CancellationToken cancellationToken = default);
 }

@@ -59,4 +59,36 @@ public class VoteRepository : BaseRepository<VoteEntity>, IVoteRepository
         
         return (upvotes, downvotes);
     }
+
+    public async Task<int> GetTotalUpvotesGivenByUserAsync(long telegramUserId, CancellationToken cancellationToken = default)
+    {
+        // Query all votes where RowKey (TelegramUserId) matches and VoteType is Upvote.
+        var filter = $"RowKey eq '{telegramUserId}' and VoteType eq 'Upvote'";
+        var votes = await QueryAsync(filter, cancellationToken);
+        return votes.Count();
+    }
+
+    public async Task<int> GetTotalDownvotesGivenByUserAsync(long telegramUserId, CancellationToken cancellationToken = default)
+    {
+        // Query all votes where RowKey (TelegramUserId) matches and VoteType is Downvote.
+        var filter = $"RowKey eq '{telegramUserId}' and VoteType eq 'Downvote'";
+        var votes = await QueryAsync(filter, cancellationToken);
+        return votes.Count();
+    }
+
+    public async Task<int> GetTotalUpvotesReceivedByUserAsync(long telegramUserId, CancellationToken cancellationToken = default)
+    {
+        // This requires joining with TrackRecords to find tracks shared by the user.
+        // For now, we'll need to implement this in a service layer that has access to both repositories.
+        // Return 0 as placeholder - will be calculated in the service layer.
+        return await Task.FromResult(0);
+    }
+
+    public async Task<int> GetTotalDownvotesReceivedByUserAsync(long telegramUserId, CancellationToken cancellationToken = default)
+    {
+        // This requires joining with TrackRecords to find tracks shared by the user.
+        // For now, we'll need to implement this in a service layer that has access to both repositories.
+        // Return 0 as placeholder - will be calculated in the service layer.
+        return await Task.FromResult(0);
+    }
 }

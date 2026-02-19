@@ -134,6 +134,40 @@ Test suite using xUnit and property-based testing.
 
 **Test file naming:** `{ClassUnderTest}Tests.cs`
 
+**Test isolation (MUST follow):**
+- **DO NOT use IDisposable** for Azure Table Storage test cleanup - it doesn't guarantee execution order
+- **ALWAYS use TableHelper.TruncateTable** in the constructor to clean tables BEFORE each test
+- Truncate all tables that the test will use to ensure a clean state
+- Use `TableHelper.TruncateTable(tableServiceClient, "TableName")` for each table
+
+**Example test structure:**
+```csharp
+public class MyRepositoryTests
+{
+    private readonly TableServiceClient _tableServiceClient;
+    private readonly IMyRepository _repository;
+
+    public MyRepositoryTests()
+    {
+        var connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING")
+            ?? "UseDevelopmentStorage=true";
+        _tableServiceClient = new TableServiceClient(connectionString);
+        
+        // Truncate tables BEFORE test execution.
+        TableHelper.TruncateTable(_tableServiceClient, "MyTable");
+        TableHelper.TruncateTable(_tableServiceClient, "RelatedTable");
+        
+        _repository = new MyRepository(_tableServiceClient, NullLogger<MyRepository>.Instance);
+    }
+
+    [Fact]
+    public async Task MyTest_ShouldWork()
+    {
+        // Test implementation
+    }
+}
+```
+
 **Dependencies:** All projects
 
 ## Code Conventions (MUST follow)

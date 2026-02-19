@@ -81,4 +81,9 @@ public class UserRepository : BaseRepository<UserEntity>, IUserRepository
     {
         return await UpdateAsync(user, cancellationToken);
     }
+
+    public async Task<IEnumerable<UserEntity>> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    {
+        return await QueryAsync("USER", cancellationToken);
+    }
 }

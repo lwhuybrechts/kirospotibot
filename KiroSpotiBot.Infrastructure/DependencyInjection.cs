@@ -78,6 +78,9 @@ public static class DependencyInjection
         // Register auto-queue service.
         services.AddScoped<IAutoQueueService, AutoQueueService>();
         
+        // Register user statistics service.
+        services.AddScoped<IUserStatisticsService, UserStatisticsService>();
+        
         // Register Spotify URL detector.
         services.AddSingleton<ISpotifyUrlDetector, Core.Services.SpotifyUrlDetector>();
         

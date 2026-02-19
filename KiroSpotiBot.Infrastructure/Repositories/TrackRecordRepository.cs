@@ -100,4 +100,35 @@ public class TrackRecordRepository : BaseRepository<TrackRecordEntity>, ITrackRe
             .OrderByDescending(c => c.Item4)
             .ToList();
     }
+
+    public async Task<IEnumerable<TrackRecordEntity>> GetByUserAsync(
+        long telegramUserId,
+        int skip = 0,
+        int take = 100,
+        CancellationToken cancellationToken = default)
+    {
+        // Get all unique chat IDs from the table by querying all partitions.
+        // This is still a cross-partition query, but we filter within each partition.
+        var allRecords = new List<TrackRecordEntity>();
+        
+        // Query with filter for the specific user.
+        // Azure Table Storage will scan partitions but filter on the property.
+        var filter = $"SharedByTelegramUserId eq {telegramUserId}L";
+        var records = await QueryAsync(filter, cancellationToken);
+        
+        return records
+            .Where(r => !r.IsDeleted)
+            .OrderByDescending(r => r.UpvoteCount)
+            .ThenByDescending(r => r.SharedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToList();
+    }
+
+    public async Task<int> GetTrackCountByUserAsync(long telegramUserId, CancellationToken cancellationToken = default)
+    {
+        var filter = $"SharedByTelegramUserId eq {telegramUserId}L";
+        var records = await QueryAsync(filter, cancellationToken);
+        return records.Count(r => !r.IsDeleted);
+    }
 }

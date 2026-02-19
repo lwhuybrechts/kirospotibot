@@ -63,4 +63,18 @@ public interface ITrackRecordRepository : IRepository<TrackRecordEntity>
     /// Gets distinct contributors (users who shared tracks) for a group chat.
     /// </summary>
     Task<IEnumerable<(long TelegramUserId, string Username, string? AvatarUrl, int TrackCount)>> GetContributorsAsync(long telegramChatId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets tracks shared by a specific user with pagination.
+    /// </summary>
+    Task<IEnumerable<TrackRecordEntity>> GetByUserAsync(
+        long telegramUserId, 
+        int skip = 0, 
+        int take = 100, 
+        CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the count of tracks shared by a user.
+    /// </summary>
+    Task<int> GetTrackCountByUserAsync(long telegramUserId, CancellationToken cancellationToken = default);
 }

@@ -23,7 +23,7 @@ namespace KiroSpotiBot.Tests.PropertyTests;
 /// and never to group chats. The actual enforcement happens in the message handler,
 /// but this tests the OAuth flow accepts private chat IDs.
 /// </summary>
-public class OAuthPrivateChatEnforcementPropertyTests : IDisposable
+public class OAuthPrivateChatEnforcementPropertyTests
 {
     private readonly SpotifyOAuthFunction _function;
     private readonly Mock<IOAuthStateRepository> _mockOAuthStateRepo;
@@ -167,10 +167,5 @@ public class OAuthPrivateChatEnforcementPropertyTests : IDisposable
         Assert.Contains("playlist-modify-private", redirectResult.Url);
         Assert.Contains("user-modify-playback-state", redirectResult.Url);
         Assert.Contains("user-read-playback-state", redirectResult.Url);
-    }
-
-    public void Dispose()
-    {
-        // Cleanup if needed.
     }
 }

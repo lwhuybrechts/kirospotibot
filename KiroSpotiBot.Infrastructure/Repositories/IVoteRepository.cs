@@ -41,4 +41,24 @@ public interface IVoteRepository : IRepository<VoteEntity>
     /// Gets vote counts (upvotes and downvotes) for a track record.
     /// </summary>
     Task<(int upvotes, int downvotes)> GetVoteCountsAsync(string trackRecordId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets total upvotes given by a user across all tracks.
+    /// </summary>
+    Task<int> GetTotalUpvotesGivenByUserAsync(long telegramUserId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets total downvotes given by a user across all tracks.
+    /// </summary>
+    Task<int> GetTotalDownvotesGivenByUserAsync(long telegramUserId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets total upvotes received by a user on their shared tracks.
+    /// </summary>
+    Task<int> GetTotalUpvotesReceivedByUserAsync(long telegramUserId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets total downvotes received by a user on their shared tracks.
+    /// </summary>
+    Task<int> GetTotalDownvotesReceivedByUserAsync(long telegramUserId, CancellationToken cancellationToken = default);
 }

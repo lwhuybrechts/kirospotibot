@@ -365,14 +365,14 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 34: Web Frontend Track Metadata Display**
     - **Validates: Requirements 15.3, 15.4, 15.5**
 
-- [ ] 21. Implement Blazor frontend - User pages
-  - [ ] 21.1 Create UserList page
+- [x] 21. Implement Blazor frontend - User pages
+  - [x] 21.1 Create UserList page
     - Display all users with contribution statistics
     - Show total upvotes/downvotes given and received
     - Link to user detail pages
     - _Requirements: 16.1_
   
-  - [ ] 21.2 Create UserDetail page
+  - [x] 21.2 Create UserDetail page
     - Display user's Telegram avatar
     - Show total upvotes/downvotes given (overall and per playlist)
     - Show total upvotes/downvotes received on shared tracks (overall and per playlist)
@@ -381,11 +381,11 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Show per-playlist statistics
     - _Requirements: 16.2, 16.3_
   
-  - [ ] 21.3 Write property test for user filter accuracy
+  - [x] 21.3 Write property test for user filter accuracy
     - **Property 35: User Filter Accuracy**
     - **Validates: Requirements 16.3**
   
-  - [ ] 21.4 Write property test for contributor count accuracy
+  - [x] 21.4 Write property test for contributor count accuracy
     - **Property 36: Contributor Count Accuracy**
     - **Validates: Requirements 16.2**
 
