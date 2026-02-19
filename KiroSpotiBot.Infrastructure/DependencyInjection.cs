@@ -57,6 +57,14 @@ public static class DependencyInjection
         services.AddScoped<ITrackRecordRepository, TrackRecordRepository>();
         services.AddScoped<IVoteRepository, VoteRepository>();
         services.AddScoped<IOAuthStateRepository, OAuthStateRepository>();
+        services.AddScoped<ITrackRepository, TrackRepository>();
+        services.AddScoped<IArtistRepository, ArtistRepository>();
+        services.AddScoped<IAlbumRepository, AlbumRepository>();
+        services.AddScoped<IGenreRepository, GenreRepository>();
+        services.AddScoped<ITrackGenreRepository, TrackGenreRepository>();
+        
+        // Register track metadata service.
+        services.AddScoped<ITrackMetadataService, TrackMetadataService>();
         
         return services;
     }

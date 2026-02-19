@@ -16,19 +16,28 @@ public class MessageHandler : IMessageHandler
     private readonly IUserRepository _userRepository;
     private readonly IGroupChatRepository _groupChatRepository;
     private readonly ISpotifyUrlDetector _spotifyUrlDetector;
+    private readonly ITrackMetadataService _trackMetadataService;
+    private readonly ITrackRecordRepository _trackRecordRepository;
+    private readonly ISpotifyService _spotifyService;
 
     public MessageHandler(
         ILogger<MessageHandler> logger,
         ITelegramBotClient telegramBotClient,
         IUserRepository userRepository,
         IGroupChatRepository groupChatRepository,
-        ISpotifyUrlDetector spotifyUrlDetector)
+        ISpotifyUrlDetector spotifyUrlDetector,
+        ITrackMetadataService trackMetadataService,
+        ITrackRecordRepository trackRecordRepository,
+        ISpotifyService spotifyService)
     {
         _logger = logger;
         _telegramBotClient = telegramBotClient;
         _userRepository = userRepository;
         _groupChatRepository = groupChatRepository;
         _spotifyUrlDetector = spotifyUrlDetector;
+        _trackMetadataService = trackMetadataService;
+        _trackRecordRepository = trackRecordRepository;
+        _spotifyService = spotifyService;
     }
 
     /// <summary>
@@ -87,16 +96,194 @@ public class MessageHandler : IMessageHandler
                 return;
             }
 
-            // TODO: Process track addition in Task 10.
-            // For now, just log that we would process the tracks.
-            _logger.LogInformation("Would process {Count} track(s) for group {ChatId}.", 
-                spotifyUrls.Count(), message.Chat.Id);
+            // Process each detected Spotify URL.
+            foreach (var url in spotifyUrls)
+            {
+                var trackId = _spotifyUrlDetector.ExtractTrackId(url);
+                if (string.IsNullOrWhiteSpace(trackId))
+                {
+                    _logger.LogWarning("Failed to extract track ID from URL: {Url}", url);
+                    continue;
+                }
+
+                await ProcessTrackAdditionAsync(
+                    trackId, 
+                    groupChat, 
+                    message.From!.Id, 
+                    message.MessageId, 
+                    cancellationToken);
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error handling message {MessageId} from chat {ChatId}.", 
                 message.MessageId, message.Chat.Id);
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Processes the addition of a track to the playlist.
+    /// </summary>
+    private async Task ProcessTrackAdditionAsync(
+        string trackId,
+        Core.Entities.GroupChatEntity groupChat,
+        long sharedByUserId,
+        int messageId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Check if track was previously deleted.
+            var isDeleted = await _trackRecordRepository.IsTrackDeletedAsync(
+                groupChat.TelegramChatId, 
+                trackId, 
+                cancellationToken);
+
+            if (isDeleted)
+            {
+                _logger.LogInformation("Track {TrackId} was previously deleted in group {ChatId}.", 
+                    trackId, groupChat.TelegramChatId);
+
+                await _telegramBotClient.SendMessage(
+                    chatId: groupChat.TelegramChatId,
+                    text: "⛔ This track was previously removed due to downvotes and cannot be added again.",
+                    replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = messageId },
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
+            // Check if track already exists in playlist (duplicate detection).
+            var trackExists = await _trackRecordRepository.TrackExistsAsync(
+                groupChat.TelegramChatId, 
+                trackId, 
+                cancellationToken);
+
+            var isDuplicate = trackExists;
+
+            // Fetch and store track metadata.
+            var metadata = await _trackMetadataService.FetchAndStoreTrackMetadataAsync(trackId, cancellationToken);
+            if (metadata == null)
+            {
+                _logger.LogWarning("Failed to fetch metadata for track {TrackId}.", trackId);
+
+                await _telegramBotClient.SendMessage(
+                    chatId: groupChat.TelegramChatId,
+                    text: "❌ Failed to fetch track information from Spotify. Please try again.",
+                    replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = messageId },
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
+            // Get administrator's access token.
+            var adminAccessToken = await _userRepository.GetDecryptedSpotifyAccessTokenAsync(
+                groupChat.AdministratorTelegramUserId, 
+                cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(adminAccessToken))
+            {
+                _logger.LogWarning("Administrator {UserId} has no valid access token.", 
+                    groupChat.AdministratorTelegramUserId);
+
+                await _telegramBotClient.SendMessage(
+                    chatId: groupChat.TelegramChatId,
+                    text: "❌ Administrator authentication expired. Please re-authenticate using /auth.",
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
+            // Add track to Spotify playlist (only if not a duplicate).
+            var addedToPlaylist = false;
+            if (!isDuplicate)
+            {
+                if (string.IsNullOrWhiteSpace(groupChat.PlaylistId))
+                {
+                    _logger.LogWarning("Group {ChatId} has no playlist configured.", groupChat.TelegramChatId);
+
+                    await _telegramBotClient.SendMessage(
+                        chatId: groupChat.TelegramChatId,
+                        text: "❌ No playlist configured. Administrator must configure a playlist using /configure.",
+                        replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = messageId },
+                        cancellationToken: cancellationToken);
+                    return;
+                }
+
+                addedToPlaylist = await _spotifyService.AddTrackToPlaylistAsync(
+                    groupChat.PlaylistId, 
+                    trackId, 
+                    adminAccessToken, 
+                    cancellationToken);
+
+                if (!addedToPlaylist)
+                {
+                    _logger.LogWarning("Failed to add track {TrackId} to playlist {PlaylistId}.", 
+                        trackId, groupChat.PlaylistId);
+
+                    await _telegramBotClient.SendMessage(
+                        chatId: groupChat.TelegramChatId,
+                        text: "❌ Failed to add track to playlist. Please check administrator authentication.",
+                        replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = messageId },
+                        cancellationToken: cancellationToken);
+                    return;
+                }
+            }
+
+            // Get user information for denormalization.
+            var user = await _userRepository.GetByTelegramUserIdAsync(sharedByUserId, cancellationToken);
+
+            // Create TrackRecord in Table Storage.
+            var trackRecord = new Core.Entities.TrackRecordEntity(
+                groupChat.TelegramChatId, 
+                trackId, 
+                sharedByUserId)
+            {
+                TrackName = metadata.Name,
+                ArtistName = metadata.ArtistName,
+                AlbumName = metadata.AlbumName,
+                AlbumImageUrl = metadata.AlbumImageUrl,
+                SharedByUsername = user?.TelegramAvatarUrl ?? string.Empty,
+                SharedByAvatarUrl = user?.TelegramAvatarUrl,
+                TelegramMessageId = messageId,
+                IsDuplicate = isDuplicate
+            };
+
+            await _trackRecordRepository.CreateTrackRecordAsync(trackRecord, cancellationToken);
+
+            _logger.LogInformation("Created track record for {TrackId} in group {ChatId}. Duplicate: {IsDuplicate}", 
+                trackId, groupChat.TelegramChatId, isDuplicate);
+
+            // Send confirmation reply with playlist link.
+            var playlistUrl = $"https://open.spotify.com/playlist/{groupChat.PlaylistId}";
+            var confirmationMessage = isDuplicate
+                ? $"ℹ️ **{metadata.Name}** by {metadata.ArtistName}\n\n" +
+                  $"This track is already in the playlist!\n\n" +
+                  $"🎵 [View Playlist]({playlistUrl})"
+                : $"✅ **{metadata.Name}** by {metadata.ArtistName}\n\n" +
+                  $"Added to the playlist!\n\n" +
+                  $"🎵 [View Playlist]({playlistUrl})\n\n" +
+                  $"Vote with 👍 or 👎 reactions!";
+
+            await _telegramBotClient.SendMessage(
+                chatId: groupChat.TelegramChatId,
+                text: confirmationMessage,
+                parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown,
+                replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = messageId },
+                linkPreviewOptions: new Telegram.Bot.Types.LinkPreviewOptions { IsDisabled = true },
+                cancellationToken: cancellationToken);
+
+            _logger.LogInformation("Sent confirmation message for track {TrackId} in group {ChatId}.", 
+                trackId, groupChat.TelegramChatId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing track addition for {TrackId} in group {ChatId}.", 
+                trackId, groupChat.TelegramChatId);
+            
+            await _telegramBotClient.SendMessage(
+                chatId: groupChat.TelegramChatId,
+                text: "❌ An error occurred while processing the track. Please try again later.",
+                replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = messageId },
+                cancellationToken: cancellationToken);
         }
     }
 
