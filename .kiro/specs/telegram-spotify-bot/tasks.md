@@ -389,19 +389,19 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 36: Contributor Count Accuracy**
     - **Validates: Requirements 16.2**
 
-- [ ] 22. Implement Blazor frontend - Genre filtering
-  - [ ] 22.1 Add genre filter functionality
+- [x] 22. Implement Blazor frontend - Genre filtering
+  - [x] 22.1 Add genre filter functionality
     - Display genre list with track counts
     - Implement genre filtering
     - Handle multi-genre tracks
     - Allow clearing filters
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5_
   
-  - [ ] 22.2 Write property test for genre filter accuracy
+  - [x] 22.2 Write property test for genre filter accuracy
     - **Property 37: Genre Filter Accuracy**
     - **Validates: Requirements 17.3**
   
-  - [ ] 22.3 Write property test for multi-genre inclusion
+  - [x] 22.3 Write property test for multi-genre inclusion
     - **Property 38: Multi-Genre Track Inclusion**
     - **Validates: Requirements 17.5**
 
