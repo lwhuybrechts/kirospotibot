@@ -215,39 +215,40 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - **Property 27: Deleted Track Re-Addition Prevention**
     - **Validates: Requirements 13.6**
 
-- [ ] 12. Checkpoint - Verify core bot functionality
+- [x] 12. Checkpoint - Verify core bot functionality
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 13. Implement bot commands
-  - [ ] 13.1 Implement /auth command
+- [x] 13. Implement bot commands
+  - [x] 13.1 Implement /auth command
     - Send OAuth link in private chat
     - Verify user authentication status
     - _Requirements: 4.1_
   
-  - [ ] 13.2 Implement /configure command
+  - [x] 13.2 Implement /configure command
     - Allow administrator to set playlist ID
     - Validate playlist exists and is accessible
     - Store playlist name in GroupChat entity
     - Enforce unique playlist constraint
     - _Requirements: 5.1, 5.2, 5.3_
   
-  - [ ] 13.3 Implement /threshold command
+  - [x] 13.3 Implement /threshold command
     - Allow administrator to set downvote threshold
     - Validate threshold is positive integer
     - Store in GroupChat entity
     - _Requirements: 18.2, 18.3, 18.5_
   
-  - [ ] 13.4 Implement /autoqueue command
+  - [x] 13.4 Implement /autoqueue command
     - Allow users to enable/disable auto-queue per group
     - Require Spotify authentication
     - Store preference in UserGroupConfig
     - _Requirements: 19.1, 19.6, 19.7_
   
-  - [ ]* 13.5 Write property test for administrator-only commands
+  - [x] 13.5 Write property test for administrator-only commands
     - **Property 14: Administrator-Only Commands**
     - **Validates: Requirements 8.1, 8.3**
+    - **Helper File: KiroSpotiBot.Tests/Helpers/MessageHelper.cs**
   
-  - [ ]* 13.6 Write property test for threshold validation
+  - [x] 13.6 Write property test for threshold validation
     - **Property 28: Downvote Threshold Validation**
     - **Validates: Requirements 18.3**
 
@@ -259,7 +260,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Handle failures silently
     - _Requirements: 19.3, 19.4, 19.5_
   
-  - [ ]* 14.2 Write property test for auto-queue conditional execution
+  - [ ] 14.2 Write property test for auto-queue conditional execution
     - **Property 41: Auto-Queue Conditional Execution**
     - **Validates: Requirements 19.3, 19.4**
 
@@ -276,7 +277,7 @@ This implementation plan breaks down the Telegram Spotify Bot into discrete codi
     - Send confirmation or error message
     - _Requirements: 20.2, 20.3, 20.4, 20.5_
   
-  - [ ]* 15.3 Write property test for manual queue addition
+  - [ ] 15.3 Write property test for manual queue addition
     - **Property 43: Manual Queue Addition**
     - **Validates: Requirements 20.2, 20.6**
 

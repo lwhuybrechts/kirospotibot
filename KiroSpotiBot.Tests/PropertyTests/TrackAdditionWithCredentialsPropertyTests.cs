@@ -131,16 +131,15 @@ public class TrackAdditionWithCredentialsPropertyTests
     }
 
     [Theory]
-    [InlineData(12345, 67890, 11111, "37i9dQZF1DXcBWIGoYBM5M", "3n3Ppam7vgaVa1iaRUc9Lp")]
-    [InlineData(22222, 33333, 44444, "5AB8PJLq8xCqXHJNqKJQzN", "7qiZfU4dY1lWllzX7mPBI")]
+    [InlineData(12345, 67890, 11111, "37i9dQZF1DXcBWIGoYBM5M")]
+    [InlineData(22222, 33333, 44444, "5AB8PJLq8xCqXHJNqKJQzN")]
     [Trait("Feature", "telegram-spotify-bot")]
     [Trait("Property", "Property 11: Track Addition with Credentials")]
     public async Task TrackAddition_WithoutAdminCredentials_FailsGracefully(
         long chatId,
         long administratorId,
         long sharingUserId,
-        string playlistId,
-        string trackId)
+        string playlistId)
     {
         // Arrange: Create group chat with administrator.
         var groupChat = new GroupChatEntity(chatId, administratorId)
@@ -173,14 +172,13 @@ public class TrackAdditionWithCredentialsPropertyTests
     }
 
     [Theory]
-    [InlineData(12345, 67890, 11111, "37i9dQZF1DXcBWIGoYBM5M", "3n3Ppam7vgaVa1iaRUc9Lp")]
-    [InlineData(22222, 33333, 22222, "5AB8PJLq8xCqXHJNqKJQzN", "7qiZfU4dY1lWllzX7mPBI")]
+    [InlineData(12345, 67890, "37i9dQZF1DXcBWIGoYBM5M", "3n3Ppam7vgaVa1iaRUc9Lp")]
+    [InlineData(22222, 33333, "5AB8PJLq8xCqXHJNqKJQzN", "7qiZfU4dY1lWllzX7mPBI")]
     [Trait("Feature", "telegram-spotify-bot")]
     [Trait("Property", "Property 11: Track Addition with Credentials")]
     public async Task TrackAddition_WhenSharingUserIsAdmin_UsesAdminCredentials(
         long chatId,
         long administratorId,
-        long sharingUserId,
         string playlistId,
         string trackId)
     {

@@ -66,6 +66,15 @@ public interface ISpotifyService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if the playlist is valid and accessible, false otherwise.</returns>
     Task<bool> ValidatePlaylistAsync(string playlistId, string accessToken, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the name of a Spotify playlist.
+    /// </summary>
+    /// <param name="playlistId">The Spotify playlist identifier.</param>
+    /// <param name="accessToken">The user's Spotify access token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The playlist name, or null if the playlist is not found or inaccessible.</returns>
+    Task<string?> GetPlaylistNameAsync(string playlistId, string accessToken, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

@@ -109,13 +109,12 @@ public class DuplicateTrackDetectionPropertyTests
     }
 
     [Theory]
-    [InlineData(12345, 67890, "3n3Ppam7vgaVa1iaRUc9Lp")]
-    [InlineData(22222, 33333, "7qiZfU4dY1lWllzX7mPBI")]
+    [InlineData(12345, "3n3Ppam7vgaVa1iaRUc9Lp")]
+    [InlineData(22222, "7qiZfU4dY1lWllzX7mPBI")]
     [Trait("Feature", "telegram-spotify-bot")]
     [Trait("Property", "Property 12: Duplicate Track Detection")]
     public async Task DuplicateDetection_NewTrack_NotDetectedAsDuplicate(
         long chatId,
-        long userId,
         string trackId)
     {
         // Act: Check if track exists (should not exist).

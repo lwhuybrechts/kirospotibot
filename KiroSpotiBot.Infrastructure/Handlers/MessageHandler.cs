@@ -21,6 +21,7 @@ public class MessageHandler : IMessageHandler
     private readonly IGroupSetupHandler _groupSetupHandler;
     private readonly IVoteManager _voteManager;
     private readonly ITrackRecordRepository _trackRecordRepository;
+    private readonly ICommandHandler _commandHandler;
 
     public MessageHandler(
         ILogger<MessageHandler> logger,
@@ -32,7 +33,8 @@ public class MessageHandler : IMessageHandler
         ITrackAdditionHandler trackAdditionHandler,
         IGroupSetupHandler groupSetupHandler,
         IVoteManager voteManager,
-        ITrackRecordRepository trackRecordRepository)
+        ITrackRecordRepository trackRecordRepository,
+        ICommandHandler commandHandler)
     {
         _logger = logger;
         _telegramBotClient = telegramBotClient;
@@ -44,6 +46,7 @@ public class MessageHandler : IMessageHandler
         _groupSetupHandler = groupSetupHandler;
         _voteManager = voteManager;
         _trackRecordRepository = trackRecordRepository;
+        _commandHandler = commandHandler;
     }
 
     /// <summary>
@@ -58,6 +61,32 @@ public class MessageHandler : IMessageHandler
             {
                 _logger.LogDebug("Ignoring message {MessageId} with no text content.", message.MessageId);
                 return;
+            }
+
+            // Check if message is a bot command.
+            if (message.Text.StartsWith('/'))
+            {
+                var command = message.Text.Split(' ')[0].ToLowerInvariant();
+                
+                switch (command)
+                {
+                    case "/auth":
+                        await _commandHandler.HandleAuthCommandAsync(message, cancellationToken);
+                        return;
+                    case "/configure":
+                        await _commandHandler.HandleConfigureCommandAsync(message, cancellationToken);
+                        return;
+                    case "/threshold":
+                        await _commandHandler.HandleThresholdCommandAsync(message, cancellationToken);
+                        return;
+                    case "/autoqueue":
+                        await _commandHandler.HandleAutoQueueCommandAsync(message, cancellationToken);
+                        return;
+                    default:
+                        // Unknown command, ignore.
+                        _logger.LogDebug("Ignoring unknown command: {Command}", command);
+                        return;
+                }
             }
 
             // Ensure user exists in database (create if needed).

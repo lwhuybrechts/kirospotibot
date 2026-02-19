@@ -256,4 +256,36 @@ public class SpotifyService : ISpotifyService
             return false;
         }
     }
+
+    /// <inheritdoc/>
+    public async Task<string?> GetPlaylistNameAsync(string playlistId, string accessToken, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var spotify = new SpotifyClient(accessToken);
+            var playlist = await spotify.Playlists.Get(playlistId, cancellationToken);
+
+            return playlist?.Name;
+        }
+        catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _logger.LogWarning("Playlist {PlaylistId} not found.", playlistId);
+            return null;
+        }
+        catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _logger.LogWarning("Unauthorized access to playlist {PlaylistId}. Token may be expired.", playlistId);
+            return null;
+        }
+        catch (APIException ex)
+        {
+            _logger.LogError(ex, "Spotify API error while getting playlist {PlaylistId} name: {Message}", playlistId, ex.Message);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting playlist {PlaylistId} name.", playlistId);
+            return null;
+        }
+    }
 }

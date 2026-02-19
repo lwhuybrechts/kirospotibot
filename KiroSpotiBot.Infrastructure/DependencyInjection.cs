@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<IGroupSetupHandler, Handlers.GroupSetupHandler>();
         services.AddScoped<ITrackAdditionHandler, Handlers.TrackAdditionHandler>();
         services.AddScoped<IGroupConfigurationValidator, Handlers.GroupConfigurationValidator>();
+        services.AddScoped<ICommandHandler, Handlers.CommandHandler>();
         
         // Register repositories.
         services.AddScoped<IGroupChatRepository, GroupChatRepository>();
@@ -65,9 +66,13 @@ public static class DependencyInjection
         services.AddScoped<IAlbumRepository, AlbumRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<ITrackGenreRepository, TrackGenreRepository>();
+        services.AddScoped<IUserGroupConfigRepository, UserGroupConfigRepository>();
         
         // Register track metadata service.
         services.AddScoped<ITrackMetadataService, TrackMetadataService>();
+        
+        // Register vote manager.
+        services.AddScoped<IVoteManager, VoteManager>();
         
         // Register Spotify URL detector.
         services.AddSingleton<ISpotifyUrlDetector, Core.Services.SpotifyUrlDetector>();

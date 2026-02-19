@@ -14,6 +14,36 @@
 - **Sentry** (v5.0.0+) - Error logging and monitoring
 - **xUnit** - Unit testing framework
 
+### Telegram.Bot Deserialization
+
+**CRITICAL: When deserializing JSON to Telegram.Bot.Types models, ALWAYS use `Telegram.Bot.JsonBotAPI.Options`.**
+
+The Telegram Bot API uses snake_case for JSON properties, but C# models use PascalCase. The `JsonBotAPI.Options` provides the correct serialization settings for proper conversion.
+
+**Example:**
+```csharp
+using System.Text.Json;
+using Telegram.Bot.Types;
+
+// ✅ CORRECT: Use JsonBotAPI.Options
+var update = JsonSerializer.Deserialize<Update>(json, Telegram.Bot.JsonBotAPI.Options);
+var message = JsonSerializer.Deserialize<Message>(json, Telegram.Bot.JsonBotAPI.Options);
+
+// ❌ WRONG: Without JsonBotAPI.Options, properties will be null
+var update = JsonSerializer.Deserialize<Update>(json); // Properties will be null!
+```
+
+**When to use:**
+- Deserializing webhook payloads in Azure Functions
+- Creating test fixtures with Telegram.Bot types
+- Any JSON deserialization involving `Telegram.Bot.Types` namespace
+
+**Why it's needed:**
+- Telegram API uses `snake_case` (e.g., `message_id`, `from`, `chat`)
+- C# models use `PascalCase` (e.g., `MessageId`, `From`, `Chat`)
+- Without proper options, JsonSerializer cannot map properties correctly
+- Properties will remain null even if present in JSON
+
 ## Azure Services
 
 - **Azure Functions V4** - Serverless webhook handlers
