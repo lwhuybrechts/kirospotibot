@@ -30,9 +30,6 @@ var builder = Host.CreateDefaultBuilder(args)
 
         // Register infrastructure services (repositories, encryption, Azure Table Storage)
         services.AddInfrastructure(context.Configuration);
-
-        services.AddApplicationInsightsTelemetryWorkerService();
-        services.ConfigureFunctionsApplicationInsights();
     });
 
 builder.Build().Run();
