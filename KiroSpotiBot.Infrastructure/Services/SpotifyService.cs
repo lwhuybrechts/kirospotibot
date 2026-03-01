@@ -94,7 +94,7 @@ public class SpotifyService : ISpotifyService
             var trackUri = $"spotify:track:{trackId}";
             
             var request = new PlaylistAddItemsRequest(new List<string> { trackUri });
-            await spotify.Playlists.AddItems(playlistId, request, cancellationToken);
+            await spotify.Playlists.AddPlaylistItems(playlistId, request, cancellationToken);
 
             _logger.LogInformation("Successfully added track {TrackId} to playlist {PlaylistId}.", trackId, playlistId);
             return true;
@@ -144,7 +144,7 @@ public class SpotifyService : ISpotifyService
                 }
             };
             
-            await spotify.Playlists.RemoveItems(playlistId, request, cancellationToken);
+            await spotify.Playlists.RemovePlaylistItems(playlistId, request, cancellationToken);
 
             _logger.LogInformation("Successfully removed track {TrackId} from playlist {PlaylistId}.", trackId, playlistId);
             return true;
