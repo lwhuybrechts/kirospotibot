@@ -66,7 +66,7 @@ public class SpotifyOAuthFunction
     /// </summary>
     [Function("SpotifyOAuthCallback")]
     public async Task<IActionResult> HandleCallback(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "auth/spotify/callback")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "auth/spotify/callback")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
