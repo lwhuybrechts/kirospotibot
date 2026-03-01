@@ -1,7 +1,10 @@
 name: Deploy Blazor Frontend
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Build and Test"]
+    types:
+      - completed
     branches: [ main ]
   workflow_dispatch:
 
@@ -12,6 +15,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     
     steps:
     - name: Checkout code
