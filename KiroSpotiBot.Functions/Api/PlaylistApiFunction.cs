@@ -39,7 +39,7 @@ public class PlaylistApiFunction
     /// </summary>
     [Function("GetPlaylists")]
     public async Task<IActionResult> GetPlaylists(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/playlists")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "playlists")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
@@ -64,7 +64,7 @@ public class PlaylistApiFunction
     /// </summary>
     [Function("GetPlaylist")]
     public async Task<IActionResult> GetPlaylist(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/playlists/{chatId:long}")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "playlists/{chatId:long}")] HttpRequest req,
         long chatId,
         CancellationToken cancellationToken)
     {
@@ -95,7 +95,7 @@ public class PlaylistApiFunction
     /// </summary>
     [Function("GetPlaylistTracks")]
     public async Task<IActionResult> GetPlaylistTracks(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/playlists/{chatId:long}/tracks")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "playlists/{chatId:long}/tracks")] HttpRequest req,
         long chatId,
         CancellationToken cancellationToken)
     {
@@ -154,7 +154,7 @@ public class PlaylistApiFunction
     /// </summary>
     [Function("GetPlaylistContributors")]
     public async Task<IActionResult> GetPlaylistContributors(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/playlists/{chatId:long}/contributors")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "playlists/{chatId:long}/contributors")] HttpRequest req,
         long chatId,
         CancellationToken cancellationToken)
     {
@@ -180,7 +180,7 @@ public class PlaylistApiFunction
     /// </summary>
     [Function("GetPlaylistGenres")]
     public async Task<IActionResult> GetPlaylistGenres(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/playlists/{chatId:long}/genres")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "playlists/{chatId:long}/genres")] HttpRequest req,
         long chatId,
         CancellationToken cancellationToken)
     {

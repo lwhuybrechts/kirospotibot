@@ -29,7 +29,7 @@ public class UserApiFunction
     /// </summary>
     [Function("GetUsers")]
     public async Task<IActionResult> GetUsers(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/users")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "users")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
@@ -54,7 +54,7 @@ public class UserApiFunction
     /// </summary>
     [Function("GetUser")]
     public async Task<IActionResult> GetUser(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/users/{userId:long}")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "users/{userId:long}")] HttpRequest req,
         long userId,
         CancellationToken cancellationToken)
     {
