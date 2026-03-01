@@ -1,0 +1,59 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build solution
+      run: dotnet build --no-restore --configuration Release
+    
+    - name: Install Azurite
+      run: npm install -g azurite
+    
+    - name: Start Azurite
+      run: |
+        azurite --silent --location ./bin/azurite --debug ./bin/azurite/debug.log &
+        sleep 5
+    
+    - name: Run tests with coverage
+      run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage
+    
+    - name: Generate coverage report
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11
+      with:
+        reports: './coverage/**/coverage.cobertura.xml'
+        targetdir: './coverage-report'
+        reporttypes: 'HtmlInline;Cobertura;MarkdownSummaryGithub'
+    
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ./coverage-report
+    
+    - name: Add coverage summary to PR
+      if: github.event_name == 'pull_request'
+      run: cat ./coverage-report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+    
+    - name: Stop Azurite
+      if: always()
+      run: pkill -f azurite || true
