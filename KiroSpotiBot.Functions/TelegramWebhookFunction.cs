@@ -34,7 +34,7 @@ public class TelegramWebhookFunction
     /// </summary>
     [Function("TelegramWebhook")]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "webhook/telegram")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "webhook/telegram")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
