@@ -48,7 +48,8 @@ public class GroupChatRepository : BaseRepository<GroupChatEntity>, IGroupChatRe
     public async Task<IEnumerable<GroupChatEntity>> GetAllWithPlaylistsAsync(CancellationToken cancellationToken = default)
     {
         // Query all group chats that have a playlist configured.
-        var filter = "PlaylistId ne null and PlaylistId ne ''";
+        // Note: Azure Table Storage doesn't support 'ne null', so we only filter for non-empty strings.
+        var filter = "PlaylistId ne ''";
         return await QueryAsync(filter, cancellationToken);
     }
 }
