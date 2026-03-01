@@ -1,4 +1,5 @@
 using KiroSpotiBot.Core.Entities;
+using KiroSpotiBot.Core.Models;
 
 namespace KiroSpotiBot.Infrastructure.Repositories;
 
@@ -62,7 +63,7 @@ public interface ITrackRecordRepository : IRepository<TrackRecordEntity>
     /// <summary>
     /// Gets distinct contributors (users who shared tracks) for a group chat.
     /// </summary>
-    Task<IEnumerable<(long TelegramUserId, string Username, string? AvatarUrl, int TrackCount)>> GetContributorsAsync(long telegramChatId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Contributor>> GetContributorsAsync(long telegramChatId, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets tracks shared by a specific user with pagination.

@@ -1,4 +1,4 @@
-@using KiroSpotiBot.Core.Entities
+@using KiroSpotiBot.ApiModels
 
 <div class="card">
     <div class="card-body">
@@ -130,6 +130,6 @@
         public int UpvoteCount { get; set; }
         public int DownvoteCount { get; set; }
         public List<string> Genres { get; set; } = new();
-        public List<VoteEntity> Votes { get; set; } = new();
+        public List<VoteDto> Votes { get; set; } = new();
     }
 }

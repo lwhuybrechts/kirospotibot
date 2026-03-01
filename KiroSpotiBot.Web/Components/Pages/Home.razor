@@ -1,7 +1,44 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>KiroSpotiBot</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4">KiroSpotiBot</h1>
+        <p class="lead">Collaborative Spotify Playlists for Telegram Groups</p>
+    </div>
 
-Welcome to your new app.
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">📋 Browse Playlists</h5>
+                    <p class="card-text">View all collaborative playlists created by Telegram groups.</p>
+                    <a href="/playlists" class="btn btn-primary">View Playlists</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">👥 Browse Users</h5>
+                    <p class="card-text">See who's sharing tracks and their contribution statistics.</p>
+                    <a href="/users" class="btn btn-primary">View Users</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h3>How it works</h3>
+        <ol>
+            <li>Add the bot to your Telegram group</li>
+            <li>Configure a Spotify playlist</li>
+            <li>Share Spotify track URLs in the group</li>
+            <li>Tracks are automatically added to the playlist</li>
+            <li>Vote on tracks with 👍 or 👎 reactions</li>
+            <li>Tracks with too many downvotes are automatically removed</li>
+        </ol>
+    </div>
+</div>
+

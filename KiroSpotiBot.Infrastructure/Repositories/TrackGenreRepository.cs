@@ -1,6 +1,7 @@
 using Azure.Data.Tables;
 using KiroSpotiBot.Core.Entities;
 using KiroSpotiBot.Core.Interfaces;
+using KiroSpotiBot.Core.Models;
 using Microsoft.Extensions.Logging;
 
 namespace KiroSpotiBot.Infrastructure.Repositories;
@@ -43,7 +44,7 @@ public class TrackGenreRepository : BaseRepository<TrackGenreEntity>, ITrackGenr
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<(string GenreName, int TrackCount)>> GetGenresForTracksAsync(IEnumerable<string> trackSpotifyIds, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<GenreInfo>> GetGenresForTracksAsync(IEnumerable<string> trackSpotifyIds, CancellationToken cancellationToken = default)
     {
         var genreCounts = new Dictionary<string, int>();
         
@@ -64,8 +65,8 @@ public class TrackGenreRepository : BaseRepository<TrackGenreEntity>, ITrackGenr
         }
 
         return genreCounts
-            .Select(kvp => (kvp.Key, kvp.Value))
-            .OrderByDescending(g => g.Value)
+            .Select(kvp => new GenreInfo { GenreName = kvp.Key, TrackCount = kvp.Value })
+            .OrderByDescending(g => g.TrackCount)
             .ToList();
     }
 }

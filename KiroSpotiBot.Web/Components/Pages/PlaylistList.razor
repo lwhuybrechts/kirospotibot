@@ -1,9 +1,7 @@
 @page "/playlists"
-@using KiroSpotiBot.Core.Entities
-@using KiroSpotiBot.Infrastructure.Repositories
-@inject IGroupChatRepository GroupChatRepository
-@inject ITrackRecordRepository TrackRecordRepository
-@rendermode InteractiveServer
+@using KiroSpotiBot.ApiModels
+@using KiroSpotiBot.Web.Services
+@inject IPlaylistApiClient PlaylistApiClient
 
 <PageTitle>Playlists - KiroSpotiBot</PageTitle>
 
@@ -34,9 +32,14 @@
                         <div class="card-body">
                             <h5 class="card-title">@playlist.PlaylistName</h5>
                             <p class="card-text text-muted">
-                                <small>@playlist.TrackCount track@(playlist.TrackCount != 1 ? "s" : "")</small>
+                                <small>Downvote threshold: @playlist.DownvoteThreshold</small>
                             </p>
-                            <a href="/playlist/@playlist.TelegramChatId" class="btn btn-primary">View Playlist</a>
+                            <div class="d-flex gap-2">
+                                <a href="/playlist/@playlist.ChatId" class="btn btn-primary flex-grow-1">View Playlist</a>
+                                <a href="https://open.spotify.com/playlist/@playlist.PlaylistId" target="_blank" class="btn btn-success">
+                                    <span>🎵</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -46,7 +49,7 @@
 </div>
 
 @code {
-    private List<PlaylistViewModel>? playlists;
+    private List<PlaylistDto>? playlists;
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
@@ -60,36 +63,12 @@
         
         try
         {
-            var groupChats = await GroupChatRepository.GetAllWithPlaylistsAsync();
-            
-            var playlistViewModels = new List<PlaylistViewModel>();
-            
-            foreach (var groupChat in groupChats)
-            {
-                var trackCount = await TrackRecordRepository.GetTrackCountAsync(groupChat.TelegramChatId);
-                
-                playlistViewModels.Add(new PlaylistViewModel
-                {
-                    TelegramChatId = groupChat.TelegramChatId,
-                    PlaylistName = groupChat.PlaylistName ?? "Unnamed Playlist",
-                    PlaylistId = groupChat.PlaylistId ?? "",
-                    TrackCount = trackCount
-                });
-            }
-            
-            playlists = playlistViewModels.OrderBy(p => p.PlaylistName).ToList();
+            var allPlaylists = await PlaylistApiClient.GetPlaylistsAsync();
+            playlists = allPlaylists.OrderBy(p => p.PlaylistName).ToList();
         }
         finally
         {
             isLoading = false;
         }
-    }
-
-    private class PlaylistViewModel
-    {
-        public long TelegramChatId { get; set; }
-        public string PlaylistName { get; set; } = string.Empty;
-        public string PlaylistId { get; set; } = string.Empty;
-        public int TrackCount { get; set; }
     }
 }

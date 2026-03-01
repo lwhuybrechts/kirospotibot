@@ -1,4 +1,5 @@
 using KiroSpotiBot.Core.Entities;
+using KiroSpotiBot.Core.Models;
 
 namespace KiroSpotiBot.Core.Interfaces;
 
@@ -30,5 +31,5 @@ public interface ITrackGenreRepository
     /// <param name="trackSpotifyIds">The list of Spotify track identifiers.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The list of distinct genre names with track counts.</returns>
-    Task<IEnumerable<(string GenreName, int TrackCount)>> GetGenresForTracksAsync(IEnumerable<string> trackSpotifyIds, CancellationToken cancellationToken = default);
+    Task<IEnumerable<GenreInfo>> GetGenresForTracksAsync(IEnumerable<string> trackSpotifyIds, CancellationToken cancellationToken = default);
 }

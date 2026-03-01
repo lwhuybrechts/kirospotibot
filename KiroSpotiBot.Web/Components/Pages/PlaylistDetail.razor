@@ -1,13 +1,8 @@
 @page "/playlist/{ChatId:long}"
-@using KiroSpotiBot.Core.Entities
-@using KiroSpotiBot.Infrastructure.Repositories
-@using KiroSpotiBot.Core.Interfaces
+@using KiroSpotiBot.ApiModels
+@using KiroSpotiBot.Web.Services
 @using KiroSpotiBot.Web.Components.Shared
-@inject IGroupChatRepository GroupChatRepository
-@inject ITrackRecordRepository TrackRecordRepository
-@inject ITrackGenreRepository TrackGenreRepository
-@inject IVoteRepository VoteRepository
-@rendermode InteractiveServer
+@inject IPlaylistApiClient PlaylistApiClient
 
 <PageTitle>@playlistName - KiroSpotiBot</PageTitle>
 
@@ -20,7 +15,7 @@
             </div>
         </div>
     }
-    else if (groupChat == null)
+    else if (playlist == null)
     {
         <div class="alert alert-danger">
             <p>Playlist not found.</p>
@@ -33,7 +28,7 @@
                 <h1>@playlistName</h1>
                 <p class="text-muted">@totalTracks track@(totalTracks != 1 ? "s" : "")</p>
             </div>
-            <a href="https://open.spotify.com/playlist/@groupChat.PlaylistId" target="_blank" class="btn btn-success">
+            <a href="https://open.spotify.com/playlist/@playlist.PlaylistId" target="_blank" class="btn btn-success">
                 Open in Spotify
             </a>
         </div>
@@ -164,7 +159,7 @@
     [Parameter]
     public long ChatId { get; set; }
 
-    private GroupChatEntity? groupChat;
+    private PlaylistDto? playlist;
     private string playlistName = "Loading...";
     private int totalTracks = 0;
     private bool isLoading = true;
@@ -173,8 +168,8 @@
     private List<TrackViewModel> filteredTracks = new();
     private List<TrackViewModel> paginatedTracks = new();
     
-    private List<ContributorViewModel> contributors = new();
-    private List<GenreViewModel> genres = new();
+    private List<ContributorDto> contributors = new();
+    private List<GenreDto> genres = new();
 
     private long? selectedContributor = null;
     private string? selectedGenre = null;
@@ -194,40 +189,22 @@
 
         try
         {
-            groupChat = await GroupChatRepository.GetByTelegramChatIdAsync(ChatId);
+            playlist = await PlaylistApiClient.GetPlaylistAsync(ChatId);
             
-            if (groupChat == null)
+            if (playlist == null)
             {
                 return;
             }
 
-            playlistName = groupChat.PlaylistName ?? "Unnamed Playlist";
+            playlistName = playlist.PlaylistName ?? "Unnamed Playlist";
 
             // Load all tracks.
-            var trackRecords = await TrackRecordRepository.GetByGroupChatAsync(ChatId, 0, 10000);
-            var nonDeletedTracks = trackRecords.Where(t => !t.IsDeleted).ToList();
-            totalTracks = nonDeletedTracks.Count;
-
-            // Load track genres.
-            var trackSpotifyIds = nonDeletedTracks.Select(t => t.TrackSpotifyId).Distinct().ToList();
-            var trackGenresMap = new Dictionary<string, List<string>>();
-            
-            foreach (var trackId in trackSpotifyIds)
-            {
-                var trackGenres = await TrackGenreRepository.GetGenresForTrackAsync(trackId);
-                trackGenresMap[trackId] = trackGenres.ToList();
-            }
-
-            // Load votes for all tracks.
-            var votesMap = new Dictionary<string, List<VoteEntity>>();
-            foreach (var track in nonDeletedTracks)
-            {
-                var votes = await VoteRepository.GetByTrackRecordAsync(track.TrackRecordId);
-                votesMap[track.TrackRecordId] = votes.ToList();
-            }
+            var trackDtos = await PlaylistApiClient.GetPlaylistTracksAsync(ChatId);
+            var trackList = trackDtos.ToList();
+            totalTracks = trackList.Count;
 
             // Build track view models.
-            allTracks = nonDeletedTracks.Select(t => new TrackViewModel
+            allTracks = trackList.Select(t => new TrackViewModel
             {
                 TrackRecordId = t.TrackRecordId,
                 TrackSpotifyId = t.TrackSpotifyId,
@@ -241,27 +218,15 @@
                 SharedAt = t.SharedAt,
                 UpvoteCount = t.UpvoteCount,
                 DownvoteCount = t.DownvoteCount,
-                Genres = trackGenresMap.ContainsKey(t.TrackSpotifyId) ? trackGenresMap[t.TrackSpotifyId] : new List<string>(),
-                Votes = votesMap.ContainsKey(t.TrackRecordId) ? votesMap[t.TrackRecordId] : new List<VoteEntity>()
+                Genres = t.Genres,
+                Votes = t.Votes
             }).ToList();
 
             // Load contributors.
-            var contributorData = await TrackRecordRepository.GetContributorsAsync(ChatId);
-            contributors = contributorData.Select(c => new ContributorViewModel
-            {
-                TelegramUserId = c.TelegramUserId,
-                Username = c.Username,
-                AvatarUrl = c.AvatarUrl,
-                TrackCount = c.TrackCount
-            }).ToList();
+            contributors = (await PlaylistApiClient.GetPlaylistContributorsAsync(ChatId)).ToList();
 
             // Load genres.
-            var genreData = await TrackGenreRepository.GetGenresForTracksAsync(trackSpotifyIds);
-            genres = genreData.Select(g => new GenreViewModel
-            {
-                GenreName = g.GenreName,
-                TrackCount = g.TrackCount
-            }).ToList();
+            genres = (await PlaylistApiClient.GetPlaylistGenresAsync(ChatId)).ToList();
 
             ApplyFilters();
         }
@@ -372,20 +337,6 @@
         public int UpvoteCount { get; set; }
         public int DownvoteCount { get; set; }
         public List<string> Genres { get; set; } = new();
-        public List<VoteEntity> Votes { get; set; } = new();
-    }
-
-    private class ContributorViewModel
-    {
-        public long TelegramUserId { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string? AvatarUrl { get; set; }
-        public int TrackCount { get; set; }
-    }
-
-    private class GenreViewModel
-    {
-        public string GenreName { get; set; } = string.Empty;
-        public int TrackCount { get; set; }
+        public List<VoteDto> Votes { get; set; } = new();
     }
 }

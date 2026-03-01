@@ -1,9 +1,7 @@
 @page "/users"
-@using KiroSpotiBot.Core.Entities
-@using KiroSpotiBot.Infrastructure.Repositories
-@inject IUserRepository UserRepository
-@inject ITrackRecordRepository TrackRecordRepository
-@rendermode InteractiveServer
+@using KiroSpotiBot.ApiModels
+@using KiroSpotiBot.Web.Services
+@inject IUserApiClient UserApiClient
 
 <PageTitle>Users - KiroSpotiBot</PageTitle>
 
@@ -45,8 +43,14 @@
                                 }
                                 <div>
                                     <h5 class="card-title mb-0">@user.Username</h5>
-                                    <small class="text-muted">@user.TrackCount track@(user.TrackCount != 1 ? "s" : "") shared</small>
+                                    <small class="text-muted">@user.TotalTracksShared track@(user.TotalTracksShared != 1 ? "s" : "") shared</small>
                                 </div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <span class="badge bg-success me-1">👍 @user.TotalUpvotesReceived</span>
+                                    <span class="badge bg-danger">👎 @user.TotalDownvotesReceived</span>
+                                </small>
                             </div>
                             <a href="/user/@user.TelegramUserId" class="btn btn-primary w-100">View Profile</a>
                         </div>
@@ -58,7 +62,7 @@
 </div>
 
 @code {
-    private List<UserViewModel>? users;
+    private List<UserSummaryDto>? users;
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
@@ -72,32 +76,10 @@
         
         try
         {
-            var allUsers = await UserRepository.GetAllUsersAsync();
-            var userViewModels = new List<UserViewModel>();
-
-            foreach (var user in allUsers)
-            {
-                // Get basic track count for this user.
-                var trackCount = await TrackRecordRepository.GetTrackCountByUserAsync(user.TelegramUserId);
-                
-                // Only include users who have shared tracks.
-                if (trackCount > 0)
-                {
-                    // Get username from track records (denormalized).
-                    var userTracks = await TrackRecordRepository.GetByUserAsync(user.TelegramUserId, 0, 1);
-                    var firstTrack = userTracks.FirstOrDefault();
-
-                    userViewModels.Add(new UserViewModel
-                    {
-                        TelegramUserId = user.TelegramUserId,
-                        Username = firstTrack?.SharedByUsername ?? $"User {user.TelegramUserId}",
-                        AvatarUrl = user.TelegramAvatarUrl ?? firstTrack?.SharedByAvatarUrl,
-                        TrackCount = trackCount
-                    });
-                }
-            }
-
-            users = userViewModels.OrderByDescending(u => u.TrackCount).ToList();
+            var allUsers = await UserApiClient.GetUsersAsync();
+            users = allUsers.Where(u => u.TotalTracksShared > 0)
+                           .OrderByDescending(u => u.TotalTracksShared)
+                           .ToList();
         }
         finally
         {
@@ -115,13 +97,5 @@
             return $"{parts[0][0]}{parts[1][0]}".ToUpper();
         
         return username[0].ToString().ToUpper();
-    }
-
-    private class UserViewModel
-    {
-        public long TelegramUserId { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string? AvatarUrl { get; set; }
-        public int TrackCount { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 using Azure.Data.Tables;
 using KiroSpotiBot.Core.Entities;
+using KiroSpotiBot.Core.Models;
 using Microsoft.Extensions.Logging;
 
 namespace KiroSpotiBot.Infrastructure.Repositories;
@@ -84,20 +85,21 @@ public class TrackRecordRepository : BaseRepository<TrackRecordEntity>, ITrackRe
         return allRecords.Count(r => !r.IsDeleted);
     }
 
-    public async Task<IEnumerable<(long TelegramUserId, string Username, string? AvatarUrl, int TrackCount)>> GetContributorsAsync(long telegramChatId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Contributor>> GetContributorsAsync(long telegramChatId, CancellationToken cancellationToken = default)
     {
         var allRecords = await GetByPartitionKeyAsync(telegramChatId.ToString(), cancellationToken);
         
         return allRecords
             .Where(r => !r.IsDeleted)
             .GroupBy(r => new { r.SharedByTelegramUserId, r.SharedByUsername, r.SharedByAvatarUrl })
-            .Select(g => (
-                g.Key.SharedByTelegramUserId,
-                g.Key.SharedByUsername,
-                g.Key.SharedByAvatarUrl,
-                g.Count()
-            ))
-            .OrderByDescending(c => c.Item4)
+            .Select(g => new Contributor
+            {
+                TelegramUserId = g.Key.SharedByTelegramUserId,
+                Username = g.Key.SharedByUsername,
+                AvatarUrl = g.Key.SharedByAvatarUrl,
+                TrackCount = g.Count()
+            })
+            .OrderByDescending(c => c.TrackCount)
             .ToList();
     }
 

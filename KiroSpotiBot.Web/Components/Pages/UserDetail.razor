@@ -1,12 +1,9 @@
 @page "/user/{TelegramUserId:long}"
-@using KiroSpotiBot.Core.Interfaces
-@using KiroSpotiBot.Core.Entities
-@using KiroSpotiBot.Infrastructure.Repositories
-@inject IUserStatisticsService UserStatisticsService
-@inject ITrackRecordRepository TrackRecordRepository
-@rendermode InteractiveServer
+@using KiroSpotiBot.ApiModels
+@using KiroSpotiBot.Web.Services
+@inject IUserApiClient UserApiClient
 
-<PageTitle>@(userStats?.Username ?? "User") - KiroSpotiBot</PageTitle>
+<PageTitle>@(userDetails?.Username ?? "User") - KiroSpotiBot</PageTitle>
 
 <div class="container mt-4">
     @if (isLoading)
@@ -17,7 +14,7 @@
             </div>
         </div>
     }
-    else if (userStats == null)
+    else if (userDetails == null)
     {
         <div class="alert alert-warning mt-4">
             <p>User not found.</p>
@@ -28,11 +25,11 @@
     {
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>
-                @if (!string.IsNullOrEmpty(userStats.AvatarUrl))
+                @if (!string.IsNullOrEmpty(userDetails.AvatarUrl))
                 {
-                    <img src="@userStats.AvatarUrl" alt="@userStats.Username" class="rounded-circle me-3" style="width: 60px; height: 60px;" />
+                    <img src="@userDetails.AvatarUrl" alt="@userDetails.Username" class="rounded-circle me-3" style="width: 60px; height: 60px;" />
                 }
-                @userStats.Username
+                @userDetails.Username
             </h1>
             <a href="/users" class="btn btn-secondary">Back to Users</a>
         </div>
@@ -46,19 +43,19 @@
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <div class="text-center">
-                            <h3 class="text-primary">@userStats.TotalTracksShared</h3>
+                            <h3 class="text-primary">@userDetails.TotalTracksShared</h3>
                             <p class="text-muted mb-0">Tracks Shared</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="text-center">
-                            <h3 class="text-success">@userStats.TotalUpvotesGiven / @userStats.TotalUpvotesReceived</h3>
+                            <h3 class="text-success">@userDetails.TotalUpvotesGiven / @userDetails.TotalUpvotesReceived</h3>
                             <p class="text-muted mb-0">Upvotes Given / Received</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="text-center">
-                            <h3 class="text-danger">@userStats.TotalDownvotesGiven / @userStats.TotalDownvotesReceived</h3>
+                            <h3 class="text-danger">@userDetails.TotalDownvotesGiven / @userDetails.TotalDownvotesReceived</h3>
                             <p class="text-muted mb-0">Downvotes Given / Received</p>
                         </div>
                     </div>
@@ -67,7 +64,7 @@
         </div>
 
         <!-- Per-Playlist Statistics -->
-        @if (userStats.PlaylistStats.Any())
+        @if (userDetails.PlaylistStatistics.Any())
         {
             <div class="card mb-4">
                 <div class="card-header">
@@ -87,11 +84,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var playlist in userStats.PlaylistStats)
+                                @foreach (var playlist in userDetails.PlaylistStatistics)
                                 {
                                     <tr>
                                         <td>
-                                            <a href="/playlist/@playlist.TelegramChatId">@playlist.PlaylistName</a>
+                                            <a href="/playlist/@playlist.ChatId">@playlist.PlaylistName</a>
                                         </td>
                                         <td class="text-center">@playlist.TracksShared</td>
                                         <td class="text-center">@playlist.UpvotesGiven</td>
@@ -109,7 +106,7 @@
 
         <!-- Voters Information -->
         <div class="row mb-4">
-            @if (userStats.Upvoters.Any())
+            @if (userDetails.VotersOnUserTracks.Any(v => v.UpvoteCount > 0))
             {
                 <div class="col-md-6 mb-3">
                     <div class="card">
@@ -118,7 +115,7 @@
                         </div>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
-                                @foreach (var voter in userStats.Upvoters.Take(10))
+                                @foreach (var voter in userDetails.VotersOnUserTracks.Where(v => v.UpvoteCount > 0).OrderByDescending(v => v.UpvoteCount).Take(10))
                                 {
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center">
@@ -128,7 +125,7 @@
                                             }
                                             <a href="/user/@voter.TelegramUserId">@voter.Username</a>
                                         </div>
-                                        <span class="badge bg-success rounded-pill">@voter.VoteCount</span>
+                                        <span class="badge bg-success rounded-pill">@voter.UpvoteCount</span>
                                     </li>
                                 }
                             </ul>
@@ -137,7 +134,7 @@
                 </div>
             }
 
-            @if (userStats.Downvoters.Any())
+            @if (userDetails.VotersOnUserTracks.Any(v => v.DownvoteCount > 0))
             {
                 <div class="col-md-6 mb-3">
                     <div class="card">
@@ -146,7 +143,7 @@
                         </div>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
-                                @foreach (var voter in userStats.Downvoters.Take(10))
+                                @foreach (var voter in userDetails.VotersOnUserTracks.Where(v => v.DownvoteCount > 0).OrderByDescending(v => v.DownvoteCount).Take(10))
                                 {
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center">
@@ -156,7 +153,7 @@
                                             }
                                             <a href="/user/@voter.TelegramUserId">@voter.Username</a>
                                         </div>
-                                        <span class="badge bg-danger rounded-pill">@voter.VoteCount</span>
+                                        <span class="badge bg-danger rounded-pill">@voter.DownvoteCount</span>
                                     </li>
                                 }
                             </ul>
@@ -172,14 +169,14 @@
                 <h5 class="mb-0">Tracks Shared (Ordered by Upvotes)</h5>
             </div>
             <div class="card-body">
-                @if (userTracks == null || !userTracks.Any())
+                @if (!userDetails.SharedTracks.Any())
                 {
                     <p class="text-muted">No tracks shared yet.</p>
                 }
                 else
                 {
                     <div class="row">
-                        @foreach (var track in userTracks)
+                        @foreach (var track in userDetails.SharedTracks)
                         {
                             <div class="col-12 mb-3">
                                 <div class="card">
@@ -195,6 +192,8 @@
                                                 <h6 class="mb-1">@track.TrackName</h6>
                                                 <p class="text-muted mb-1">@track.ArtistName</p>
                                                 <small class="text-muted">@track.AlbumName</small>
+                                                <br />
+                                                <small class="text-muted">in <a href="/playlist/@track.ChatId">@track.PlaylistName</a></small>
                                             </div>
                                             <div class="col-auto text-center">
                                                 <div class="d-flex gap-3">
@@ -213,19 +212,6 @@
                             </div>
                         }
                     </div>
-
-                    @if (hasMoreTracks)
-                    {
-                        <div class="text-center mt-3">
-                            <button class="btn btn-primary" @onclick="LoadMoreTracks" disabled="@isLoadingMore">
-                                @if (isLoadingMore)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                }
-                                Load More
-                            </button>
-                        </div>
-                    }
                 }
             </div>
         </div>
@@ -236,18 +222,12 @@
     [Parameter]
     public long TelegramUserId { get; set; }
 
-    private UserDetailStatistics? userStats;
-    private List<TrackRecordEntity>? userTracks;
+    private UserDetailsDto? userDetails;
     private bool isLoading = true;
-    private bool isLoadingMore = false;
-    private bool hasMoreTracks = true;
-    private int currentPage = 0;
-    private const int PageSize = 20;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadUserDetailsAsync();
-        await LoadUserTracksAsync();
     }
 
     private async Task LoadUserDetailsAsync()
@@ -256,43 +236,11 @@
         
         try
         {
-            userStats = await UserStatisticsService.GetUserDetailStatisticsAsync(TelegramUserId);
+            userDetails = await UserApiClient.GetUserAsync(TelegramUserId);
         }
         finally
         {
             isLoading = false;
-        }
-    }
-
-    private async Task LoadUserTracksAsync()
-    {
-        var tracks = await TrackRecordRepository.GetByUserAsync(TelegramUserId, currentPage * PageSize, PageSize);
-        var tracksList = tracks.ToList();
-        
-        if (userTracks == null)
-        {
-            userTracks = tracksList;
-        }
-        else
-        {
-            userTracks.AddRange(tracksList);
-        }
-
-        hasMoreTracks = tracksList.Count == PageSize;
-    }
-
-    private async Task LoadMoreTracks()
-    {
-        isLoadingMore = true;
-        currentPage++;
-        
-        try
-        {
-            await LoadUserTracksAsync();
-        }
-        finally
-        {
-            isLoadingMore = false;
         }
     }
 }

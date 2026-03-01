@@ -1,25 +1,9 @@
-namespace KiroSpotiBot.Core.Interfaces;
+namespace KiroSpotiBot.ApiModels;
 
 /// <summary>
-/// Service interface for calculating user statistics across repositories.
+/// Data transfer object for user summary information.
 /// </summary>
-public interface IUserStatisticsService
-{
-    /// <summary>
-    /// Gets all users with basic statistics.
-    /// </summary>
-    Task<IEnumerable<UserSummary>> GetAllUsersWithStatisticsAsync(CancellationToken cancellationToken = default);
-    
-    /// <summary>
-    /// Gets detailed statistics for a specific user.
-    /// </summary>
-    Task<UserDetails?> GetUserDetailsAsync(long telegramUserId, CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Summary user statistics for list view.
-/// </summary>
-public class UserSummary
+public class UserSummaryDto
 {
     public long TelegramUserId { get; set; }
     public string Username { get; set; } = string.Empty;
@@ -32,9 +16,9 @@ public class UserSummary
 }
 
 /// <summary>
-/// Detailed user statistics for detail view.
+/// Data transfer object for detailed user information.
 /// </summary>
-public class UserDetails
+public class UserDetailsDto
 {
     public long TelegramUserId { get; set; }
     public string Username { get; set; } = string.Empty;
@@ -44,15 +28,15 @@ public class UserDetails
     public int TotalDownvotesGiven { get; set; }
     public int TotalUpvotesReceived { get; set; }
     public int TotalDownvotesReceived { get; set; }
-    public List<PlaylistStatistics> PlaylistStatistics { get; set; } = new();
-    public List<SharedTrack> SharedTracks { get; set; } = new();
-    public List<VoterInfo> VotersOnUserTracks { get; set; } = new();
+    public List<PlaylistStatisticsDto> PlaylistStatistics { get; set; } = new();
+    public List<SharedTrackDto> SharedTracks { get; set; } = new();
+    public List<VoterDto> VotersOnUserTracks { get; set; } = new();
 }
 
 /// <summary>
-/// Per-playlist statistics for a user.
+/// Data transfer object for per-playlist user statistics.
 /// </summary>
-public class PlaylistStatistics
+public class PlaylistStatisticsDto
 {
     public long ChatId { get; set; }
     public string PlaylistName { get; set; } = string.Empty;
@@ -64,9 +48,9 @@ public class PlaylistStatistics
 }
 
 /// <summary>
-/// Information about a shared track.
+/// Data transfer object for shared track information.
 /// </summary>
-public class SharedTrack
+public class SharedTrackDto
 {
     public string TrackRecordId { get; set; } = string.Empty;
     public string TrackSpotifyId { get; set; } = string.Empty;
@@ -82,9 +66,9 @@ public class SharedTrack
 }
 
 /// <summary>
-/// Information about a user who voted on tracks.
+/// Data transfer object for voter information.
 /// </summary>
-public class VoterInfo
+public class VoterDto
 {
     public long TelegramUserId { get; set; }
     public string Username { get; set; } = string.Empty;
